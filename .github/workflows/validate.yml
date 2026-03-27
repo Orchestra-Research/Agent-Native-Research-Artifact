@@ -1,0 +1,54 @@
+name: Validate Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SKILL.md files
+        run: |
+          errors=0
+          for skill_dir in skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            echo "Validating $skill_name..."
+
+            # Check SKILL.md exists
+            if [ ! -f "$skill_dir/SKILL.md" ]; then
+              echo "  ERROR: Missing SKILL.md in $skill_dir"
+              errors=$((errors + 1))
+              continue
+            fi
+
+            # Check frontmatter has required fields
+            if ! head -30 "$skill_dir/SKILL.md" | grep -q "^name:"; then
+              echo "  ERROR: Missing 'name:' in $skill_dir/SKILL.md frontmatter"
+              errors=$((errors + 1))
+            fi
+
+            if ! head -30 "$skill_dir/SKILL.md" | grep -q "^description:"; then
+              echo "  ERROR: Missing 'description:' in $skill_dir/SKILL.md frontmatter"
+              errors=$((errors + 1))
+            fi
+
+            # Check SKILL.md is under 500 lines
+            lines=$(wc -l < "$skill_dir/SKILL.md")
+            if [ "$lines" -gt 500 ]; then
+              echo "  WARNING: $skill_dir/SKILL.md is $lines lines (recommended: <500)"
+            fi
+
+            echo "  OK: $skill_name"
+          done
+
+          if [ $errors -gt 0 ]; then
+            echo "Validation failed with $errors error(s)"
+            exit 1
+          fi
+
+          echo "All skills validated successfully."

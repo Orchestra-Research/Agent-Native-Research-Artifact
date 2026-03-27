@@ -1,0 +1,28 @@
+# Exploration Tree — Attention Is All You Need (minimal example)
+# This is a simplified example. Real artifacts have 8+ nodes.
+
+tree:
+  - id: N01
+    type: question
+    title: "Can we build a competitive sequence model without recurrence?"
+    description: >
+      RNNs are sequential bottlenecks. Can self-attention alone handle
+      sequence transduction at SOTA quality?
+    children:
+
+      - id: N02
+        type: experiment
+        title: "Train Transformer on WMT 2014 EN-DE"
+        result: >
+          28.4 BLEU on EN-DE, surpassing all previous single models
+          including ensembles.
+        evidence: [C01, "Table 2"]
+
+      - id: N03
+        type: decision
+        title: "Use sinusoidal positional encodings"
+        choice: "Fixed sinusoidal encodings over learned embeddings"
+        alternatives:
+          - "Learned positional embeddings"
+          - "Relative position representations"
+        evidence: "Table 3 ablation shows nearly identical performance"

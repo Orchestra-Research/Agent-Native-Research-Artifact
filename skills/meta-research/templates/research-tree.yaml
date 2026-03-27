@@ -1,0 +1,57 @@
+# Research Tree — Hypothesis-Driven Project Structure
+#
+# This is the central data structure for a meta-research project.
+# It tracks field understanding, hypotheses, experiments, and results
+# in a single, version-controlled file.
+#
+# Usage: copy this template into your project root as `research-tree.yaml`
+# and update it as your research progresses.
+
+project:
+  title: ""
+  domain: ""
+  started: ""          # ISO date, e.g., 2026-02-28
+  status: active       # active | paused | completed
+
+field_understanding:
+  sota_summary: ""
+  key_papers:
+    # - id: "paper-1"
+    #   title: "Paper title"
+    #   authors: "Author et al."
+    #   year: 2026
+    #   relevance: "Why this paper matters to our work"
+  open_problems:
+    # - "Description of open problem 1"
+    # - "Description of open problem 2"
+  underexplored_areas:
+    # - "Area that lacks sufficient investigation"
+
+hypotheses:
+  # - id: "H1"
+  #   statement: "Testable claim in one sentence"
+  #   parent: null                     # null for root; parent ID for children (e.g., "H1")
+  #   motivation: "Why this hypothesis is worth testing"
+  #   status: pending                  # pending | approved | rejected | in_progress | completed | failed | abandoned
+  #   judgment:
+  #     novelty: null                  # true | false
+  #     importance: null               # low | medium | high
+  #     feasibility: null              # true | false
+  #     falsifiability: null           # true | false
+  #     already_solved: null           # true | false
+  #     verdict: null                  # approved | rejected
+  #     rationale: ""                  # Brief explanation of verdict
+  #   experiment:
+  #     design_summary: ""
+  #     protocol_path: "experiments/H1-slug/protocol.md"
+  #     status: not_started            # not_started | designed | locked | running | done
+  #   results:
+  #     summary: ""
+  #     outcome: null                  # supported | refuted | inconclusive
+  #     key_metrics:
+  #       - metric: ""
+  #         value: null
+  #         baseline_value: null
+  #         delta: null
+  #     artifacts_path: "experiments/H1-slug/results/"
+  #   children: []                     # e.g., ["H1.1", "H1.2"]

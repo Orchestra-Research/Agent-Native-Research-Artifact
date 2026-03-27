@@ -1,0 +1,126 @@
+# ARA Seal Level 1 — Validation Checklist
+
+These are all checks the Seal validator runs. Fix ALL failures before reporting success.
+
+## 1. Directory Existence
+
+All must exist as directories:
+- `logic/`
+- `logic/solution/`
+- `src/`
+- `src/configs/`
+- `trace/`
+- `evidence/`
+
+## 2. Mandatory File Existence (non-empty)
+
+All must exist with >10 bytes:
+- `PAPER.md`
+- `logic/problem.md`
+- `logic/claims.md`
+- `logic/concepts.md`
+- `logic/experiments.md`
+- `logic/solution/architecture.md`
+- `logic/solution/algorithm.md`
+- `logic/solution/constraints.md`
+- `logic/solution/heuristics.md`
+- `logic/related_work.md`
+- `src/configs/training.md`
+- `src/configs/model.md`
+- `src/environment.md`
+- `trace/exploration_tree.yaml`
+- `evidence/README.md`
+
+## 3. PAPER.md Checks
+
+- Starts with `---` (YAML frontmatter)
+- Frontmatter is valid YAML mapping
+- Contains keys: `title`, `authors`, `year`
+- Body contains "Layer Index" section
+
+## 4. Field-Level Checks (regex patterns)
+
+### logic/claims.md
+- Has `## C\d+` blocks (at least one claim)
+- Contains `**Statement**`
+- Contains `**Status**`
+- Contains `**Falsification criteria**`
+- Contains `**Proof**`
+
+### logic/problem.md
+- Has `### O\d+` blocks (observations)
+- Has `### G\d+` blocks (gaps)
+- Has Key Insight section (`## Key Insight` or `**Insight**`)
+
+### logic/experiments.md
+- Has `## E\d+` blocks (at least 3)
+- Contains `**Verifies**`
+- Contains `**Setup**`
+- Contains `**Procedure**`
+- Contains `**Expected outcome**` or `**Expected results**`
+
+### logic/solution/heuristics.md
+- Has `## H\d+` blocks
+- Contains `**Rationale**`
+- Contains `**Sensitivity**`
+- Contains `**Bounds**`
+
+### logic/related_work.md
+- Has `## RW\d+` blocks
+- Contains `**Type**`
+- Contains `**Delta**`
+
+### logic/concepts.md
+- Has `## ` sections (at least 5)
+- Contains `**Definition**`
+
+## 5. Count Checks
+
+- `logic/concepts.md`: ≥5 concept sections (`## ` headers)
+- `logic/experiments.md`: ≥3 experiment blocks (`## E\d+`)
+- `src/execution/`: ≥1 `.py` file
+- `evidence/tables/` or `evidence/figures/`: ≥1 `.md` file
+
+## 6. Evidence Quality
+
+For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
+- Must contain a Markdown table (`|...|...|` pattern)
+- Must contain `**Source**` field
+
+## 7. evidence/README.md
+
+- Must contain a Markdown table (file index)
+
+## 8. Exploration Tree (YAML)
+
+- Parses as valid YAML
+- Has top-level `tree` key
+- ≥8 nodes total (counted recursively through children)
+- All node types in {question, decision, experiment, dead_end, pivot}
+- At least 1 `dead_end` node exists
+- At least 1 `decision` node exists
+- Every node has `id` and `type` fields
+- Type-specific required fields:
+  - question: `description`
+  - experiment: `result`
+  - dead_end: `hypothesis`, `failure_mode`, `lesson`
+  - decision: `choice`, `alternatives`
+  - pivot: `from`, `to`, `trigger`
+- All `also_depends_on` references resolve to existing node IDs
+
+## 9. Cross-Layer Binding
+
+### Claim Proof → Experiment Resolution
+- Every `E\d+` in a claim's `**Proof**: [...]` must exist in experiments.md
+
+### Experiment Verifies → Claim Resolution
+- Every `C\d+` in an experiment's `**Verifies**` must exist in claims.md
+
+### Heuristic Code Ref → File Resolution
+- Every `src/...` path in `**Code ref**: [...]` must be an existing file
+
+### Architecture Components → Code Stubs (fuzzy)
+- Significant words from `## ` headings in architecture.md should appear somewhere in src/execution/ code
+
+### Tree Evidence → Claims (YAML)
+- Any `C\d+` in a tree node's `evidence` field must exist in claims.md
