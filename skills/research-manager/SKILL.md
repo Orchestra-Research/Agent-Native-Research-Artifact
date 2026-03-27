@@ -1,5 +1,5 @@
 ---
-name: pm
+name: research-manager
 description: |
   Post-task research process recorder. Invoked ONLY at the END of a coding session, after the
   user's request has been fully addressed. Reviews the conversation history, extracts research-

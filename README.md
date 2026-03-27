@@ -7,13 +7,12 @@
 
 ARA is a structured, machine-executable knowledge format designed for AI agents. Instead of flat PDFs, ARA organizes research into cross-linked layers — cognitive (claims, concepts, heuristics), physical (configs, code stubs), exploration (research DAG), and evidence (tables, figures) — so that agents can navigate, verify, and build on research efficiently.
 
-This repository contains three open-source agent skills that work with ARA:
+This repository contains two open-source agent skills that work with ARA:
 
 | Skill | Description | Invoke |
 |-------|-------------|--------|
 | **[ingestor](skills/ingestor/)** | Converts papers, repos, notes, or any research input into a structured ARA artifact | `/ingestor <path>` |
-| **[meta-research](skills/meta-research/)** | Hypothesis-driven research workflow with literature survey, experiment design, and reflection loops | `/meta-research <topic>` |
-| **[pm](skills/pm/)** | Post-session research process recorder with provenance tracking | `/pm` |
+| **[research-manager](skills/research-manager/)** | Post-session research process recorder with provenance tracking | `/research-manager` |
 
 ## Install
 
@@ -98,31 +97,17 @@ The ingestor follows a 4-stage epistemic protocol:
 
 See [skills/ingestor/SKILL.md](skills/ingestor/SKILL.md) for the full specification.
 
-### Meta-Research
-
-A hypothesis-driven research workflow agent with two roles:
-- **Clawbot Executor**: runs the research lifecycle end-to-end
-- **Research Advisor (Heartbeat)**: periodic strategic review and course correction
-
-```
-/meta-research "Does scaling law X hold for architecture Y?"
-```
-
-Workflow: Literature Survey -> Hypothesis Generation -> Judgment Gate -> Experiment Design -> Execution -> Reflection (loop)
-
-See [skills/meta-research/SKILL.md](skills/meta-research/SKILL.md) for the full specification.
-
-### PM (Process Manager)
+### Research Manager
 
 A post-session research recorder that extracts decisions, experiments, dead ends, claims, and heuristics from your coding session and writes them to an ARA artifact.
 
 ```
-/pm
+/research-manager
 ```
 
 Runs automatically at the end of each session. Maintains provenance tracking so you always know what came from the human vs. the AI.
 
-See [skills/pm/SKILL.md](skills/pm/SKILL.md) for the full specification.
+See [skills/research-manager/SKILL.md](skills/research-manager/SKILL.md) for the full specification.
 
 ## Compatibility
 
