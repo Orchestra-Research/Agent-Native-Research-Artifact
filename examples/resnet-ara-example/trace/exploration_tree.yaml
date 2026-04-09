@@ -1,23 +1,28 @@
 tree:
   - id: N01
     type: question
+    support_level: inferred
     title: Why do deeper plain CNNs degrade as depth increases?
     description: Investigate why increasing depth in a plain architecture worsens optimization and validation behavior.
     children:
       - id: N02
         type: experiment
+        support_level: explicit
         title: Compare 18-layer and 34-layer plain networks
-        result: The 34-layer plain model validates worse than the 18-layer plain model and shows the degradation phenomenon in training behavior.
+        source_refs: ["Table 2", "Section 4.1"]
+        result: The 34-layer plain model validates worse than the 18-layer plain model in the matched comparison reported by the paper.
         evidence: [C02, "Table 2"]
         children:
           - id: N03
             type: dead_end
+            support_level: inferred
             title: Keep stacking plain layers without shortcuts
             hypothesis: A deeper plain network should at least match the shallower solution space and therefore should not optimize worse.
             failure_mode: The deeper plain network trains and validates worse, revealing degradation.
             lesson: Depth alone is not enough; the formulation of the mapping matters.
       - id: N04
         type: decision
+        support_level: inferred
         title: Reformulate the target mapping as a residual function
         choice: Replace plain stacked mappings with residual blocks that add a shortcut path to the learned residual branch.
         alternatives:
@@ -27,12 +32,15 @@ tree:
         children:
           - id: N05
             type: experiment
+            support_level: explicit
             title: Compare 34-layer plain and 34-layer residual networks
-            result: The 34-layer residual model improves optimization behavior and lowers top-1 validation error relative to the 34-layer plain model.
+            source_refs: ["Table 2", "Section 4.1"]
+            result: The 34-layer residual model lowers top-1 validation error relative to the 34-layer plain model.
             evidence: [C01, "Table 2"]
             children:
               - id: N06
                 type: decision
+                support_level: inferred
                 title: Use identity shortcuts by default
                 choice: Use identity shortcuts when dimensions match and adapt shortcuts only when dimensions increase.
                 alternatives:
@@ -42,12 +50,16 @@ tree:
                 children:
                   - id: N07
                     type: experiment
+                    support_level: explicit
                     title: Compare shortcut options A, B, and C
+                    source_refs: ["Table 3", "Section 4.1"]
                     result: All three shortcut variants improve over plain-34; option B is slightly better than A and option C is only marginally better than B.
                     evidence: [C04, "Table 3", "Section 4.2"]
           - id: N09
             type: experiment
+            support_level: explicit
             title: Scale the residual family to 50, 101, and 152 layers
             also_depends_on: [N06]
+            source_refs: ["Table 3", "Section 4.1"]
             result: Residual models continue to improve top-1 and top-5 ImageNet error as depth increases.
             evidence: [C03, "Table 3"]

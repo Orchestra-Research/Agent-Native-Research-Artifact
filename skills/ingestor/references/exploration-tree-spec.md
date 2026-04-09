@@ -13,12 +13,16 @@ successful branch, failed attempt, and design decision that shaped the final res
 tree:
   - id: N01
     type: question
+    support_level: explicit
+    source_refs: ["§1", "Table 2"]
     title: "{Central research question}"
     description: "{What question is being investigated}"
     children:
 
       - id: N02
         type: experiment
+        support_level: explicit
+        source_refs: ["Figure 4", "Table 2"]
         title: "{What was tried}"
         result: "{What was observed}"
         evidence: [C01, "Figure 3", "§2.2"]
@@ -26,6 +30,7 @@ tree:
 
           - id: N04
             type: decision
+            support_level: inferred
             title: "{What was decided}"
             choice: "{The chosen approach}"
             alternatives:
@@ -37,6 +42,7 @@ tree:
 
       - id: N03
         type: dead_end
+        support_level: inferred
         title: "{What was tried and failed}"
         hypothesis: "{What was expected}"
         failure_mode: "{Why it failed}"
@@ -46,6 +52,8 @@ tree:
   # For DAG edges (node with multiple parents):
   - id: N10
     type: experiment
+    support_level: explicit
+    source_refs: ["Table 5"]
     title: "{Convergent experiment}"
     also_depends_on: [N07, N08]  # additional parents beyond nesting
     result: "{What was observed}"
@@ -90,7 +98,9 @@ A change in research direction.
 4. **Must include dead_end nodes**: At least 1 from ablations or rejected alternatives
 5. **Must include decision nodes**: At least 1 documenting a design choice
 6. **Every node has**: `id` (N01, N02...), `type`, `title`
-7. **`also_depends_on`**: Only for DAG convergence (node has multiple parents beyond nesting)
+7. **Every node has `support_level`**: `explicit` or `inferred`
+8. **Explicit nodes should have `source_refs`**: table/figure/section references from the input material
+9. **`also_depends_on`**: Only for DAG convergence (node has multiple parents beyond nesting)
 
 ## Extraction Strategy
 
@@ -101,6 +111,11 @@ When building from a PDF:
 - **Ablation results showing X hurts** → dead_end nodes
 - **"We initially pursued X but found..."** → pivot nodes
 - **"This approach fails because..."** → dead_end nodes
+
+Support-level guidance:
+- Mark a node `explicit` only if the paper directly reports it
+- Mark a node `inferred` if you are reconstructing a plausible research decision from the narrative structure
+- Prefer omission over fabricating a highly specific inferred node
 
 When building from experiment logs:
 - Each experiment run → experiment node

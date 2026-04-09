@@ -158,12 +158,15 @@ Each claim MUST have ALL fields:
 - **Status**: {hypothesis|supported|refuted}
 - **Falsification criteria**: {What would disprove this}
 - **Proof**: [{experiment IDs: E01, E02}]
+- **Evidence basis**: {What the cited evidence directly shows}
+- **Interpretation**: {Optional broader reading that should not be confused with the raw evidence}
 - **Dependencies**: {other claim IDs, if any}
 - **Tags**: {comma-separated keywords}
 ```
 
 Proof MUST reference experiment IDs from experiments.md.
 Each proofed experiment should in turn be backed by evidence files whose rows or measurements actually match the claim being asserted.
+`Statement` should stay at the strongest level directly supported by the cited evidence. Use `Interpretation` for broader synthesis.
 
 ---
 
@@ -322,6 +325,28 @@ Rules:
 - Raw source-table files should reproduce the original row set relevant to that table, not a claim-specific slice
 - If you drop rows, rename the file as a derived subset and declare the parent source
 - Do not combine rows from multiple source tables while retaining a single original table number in the filename
+
+---
+
+## trace/exploration_tree.yaml
+
+Each node should distinguish direct source support from reconstruction:
+
+```yaml
+tree:
+  - id: N01
+    type: question
+    support_level: explicit | inferred
+    source_refs: ["Table 2", "§4.1"]   # recommended for explicit nodes
+    title: "{...}"
+    description: "{...}"
+```
+
+Rules:
+- `support_level: explicit` means the node is directly grounded in the provided source material
+- `support_level: inferred` means the node is a reconstruction of the paper's logic, not a literal session record
+- Explicit nodes should include `source_refs`
+- Inferred nodes must not be presented as if they were directly observed historical events
 
 ---
 

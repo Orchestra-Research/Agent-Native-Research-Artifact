@@ -104,11 +104,17 @@ Before moving on, perform an **evidence capture pass**:
 **Stage 2 — Cognitive Mapping**
 Map extracted atoms to `/logic/`:
 - **problem.md**: observations (with numbers) → gaps → key insight → assumptions
-- **claims.md**: falsifiable claims with proof pointers to experiment IDs (E01, E02...)
+- **claims.md**: falsifiable claims with proof pointers to experiment IDs (E01, E02...), plus a separation between direct evidence basis and higher-level interpretation
 - **concepts.md**: ≥5 formal definitions with notation and boundary conditions
 - **experiments.md**: ≥3 declarative verification plans (NO exact numbers — directional only)
 - **solution/**: architecture (component graph), algorithm (math + pseudocode), constraints, heuristics
 - **related_work.md**: typed dependency graph (imports/extends/bounds/baseline/refutes)
+
+When writing claims:
+- Phrase the main `Statement` at the strongest level directly supported by the cited evidence
+- Put raw support in `Evidence basis`
+- Put any broader synthesis in `Interpretation`
+- If the evidence only shows validation metrics, do not upgrade the claim to training dynamics or optimization quality unless training-side evidence is also captured
 
 **Stage 3 — Physical Stubbing**
 Generate `/src/`:
@@ -125,6 +131,9 @@ Reconstruct the research DAG for `/trace/exploration_tree.yaml`:
 - Dead ends from ablations/rejected alternatives = typed leaf nodes
 - ≥8 nodes, must include dead_end and decision types
 - Use `also_depends_on` for DAG convergence points
+- Every node must declare whether it is `explicit` from source material or `inferred` from reconstruction
+- Explicit nodes should carry source references (table/figure/section labels)
+- Inferred nodes are allowed only when they help reconstruct the paper's logic without pretending to be literal session logs
 
 ### Step 3: Generate Files
 
@@ -134,7 +143,7 @@ directory structure and field-level requirements for every file.
 **Mandatory files** (all must exist and be non-trivial):
 - `PAPER.md` — YAML frontmatter (title, authors, year, venue, doi, ara_version, domain, keywords, claims_summary, abstract) + Layer Index
 - `logic/problem.md` — Observations (O1, O2...), Gaps (G1, G2...), Key Insight, Assumptions
-- `logic/claims.md` — Claims (C01, C02...) each with Statement, Status, Falsification criteria, Proof, Dependencies, Tags
+- `logic/claims.md` — Claims (C01, C02...) each with Statement, Status, Falsification criteria, Proof, Evidence basis, Interpretation, Dependencies, Tags
 - `logic/concepts.md` — ≥5 concepts each with Notation, Definition, Boundary conditions, Related concepts
 - `logic/experiments.md` — ≥3 experiments (E01, E02...) each with Verifies, Setup, Procedure, Metrics, Expected outcome (directional only!), Baselines, Dependencies
 - `logic/solution/architecture.md` — Component graph with inputs/outputs
@@ -177,6 +186,9 @@ Run ARA Seal Level 1 validation. Perform these checks:
 - Evidence file names, source labels, and captions agree on the original table/figure identifier
 - Any file named like a raw source table is a faithful transcription rather than a filtered subset
 - Claims only cite experiments whose evidence actually contains the compared rows or measurements
+- Claim wording does not outrun the evidence type (for example, validation tables alone should not be used to claim training-dynamics improvements)
+- Trace nodes declare `support_level: explicit|inferred`
+- Trace nodes with `support_level: explicit` include source references
 
 ### Step 5: Fix & Iterate
 
@@ -206,6 +218,7 @@ Print a summary:
 7. **"Not specified"**: If information is genuinely unavailable, write "Not specified in paper" — never guess
 8. **No fake source labels**: Never call a derived subset `Table N` or `Figure N` unless it faithfully reproduces the original source object
 9. **No synthetic trace history**: Do not invent decisions, dead ends, or experiments that are not explicit in the provided inputs; if a trajectory is inferred, mark it as inferred or omit it
+10. **Evidence-limited wording**: Do not use stronger language than the evidence supports; separate direct observations from interpretation
 
 ## Reference Files
 

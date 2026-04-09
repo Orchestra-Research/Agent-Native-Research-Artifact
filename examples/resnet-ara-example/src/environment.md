@@ -1,7 +1,5 @@
 # Environment
 
-# Environment
-
 - **Python**: 3.10+ for the executable stub in this artifact
 - **Framework**: PyTorch-style execution stub; source paper mentions common CNN libraries and notes that shortcut addition does not require solver modification
 - **Hardware**: Not specified in paper for the main ImageNet experiments

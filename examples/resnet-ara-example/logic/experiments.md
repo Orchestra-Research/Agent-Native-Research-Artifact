@@ -3,7 +3,7 @@
 ## E01: Plain networks at matched depth
 
 - **Verifies**: C02
-- Setup:
+- **Setup**:
   - Model: 18-layer plain net vs. 34-layer plain net
   - Hardware: Not specified in paper
   - Dataset: ImageNet 2012 classification
@@ -11,8 +11,8 @@
 - **Procedure**:
   1. Train both plain architectures with the same recipe.
   2. Compare training behavior and validation error.
-  3. Check whether the deeper plain net reduces training error as expected.
-- **Metrics**: top-1 validation error (%), training error trend
+  3. Check whether the deeper plain net improves validation error as expected.
+- **Metrics**: top-1 validation error (%)
 - **Expected outcome**:
   - the 34-layer plain net exhibits worse optimization behavior and worse validation error than the 18-layer plain net
 - **Baselines**: 18-layer plain net
@@ -30,9 +30,9 @@
   1. Replace each paired stack of 3x3 filters with a residual block plus shortcut.
   2. Keep the depth and comparison setting matched to the plain network.
   3. Compare training error and validation error.
-- **Metrics**: top-1 validation error (%), training error trend
+- **Metrics**: top-1 validation error (%)
 - **Expected outcome**:
-  - the 34-layer residual net has lower training error and lower validation error than the 34-layer plain net
+  - the 34-layer residual net has lower validation error than the 34-layer plain net
 - **Baselines**: 34-layer plain net
 - **Dependencies**: E01
 
@@ -50,8 +50,8 @@
   3. Check whether deeper residual models continue to improve.
 - **Metrics**: top-1 validation error (%), top-5 validation error (%)
 - **Expected outcome**:
-  - deeper residual variants outperform the reported 34-layer residual variants without reproducing the plain-network degradation pattern
-- **Baselines**: ResNet-34 B, ResNet-34 C
+  - deeper residual variants outperform the reported ResNet-34 B baseline and remain better than the other reported 34-layer residual comparator
+- **Baselines**: ResNet-34 B
 - **Dependencies**: E02
 
 ## E04: Shortcut variant comparison

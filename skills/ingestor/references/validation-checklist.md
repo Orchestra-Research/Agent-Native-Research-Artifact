@@ -46,6 +46,8 @@ All must exist with >10 bytes:
 - Contains `**Status**`
 - Contains `**Falsification criteria**`
 - Contains `**Proof**`
+- Contains `**Evidence basis**`
+- Contains `**Interpretation**`
 
 ### logic/problem.md
 - Has `### O\d+` blocks (observations)
@@ -103,6 +105,7 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 - At least 1 `dead_end` node exists
 - At least 1 `decision` node exists
 - Every node has `id` and `type` fields
+- Every node has `support_level` in {explicit, inferred}
 - Type-specific required fields:
   - question: `description`
   - experiment: `result`
@@ -110,12 +113,14 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
   - decision: `choice`, `alternatives`
   - pivot: `from`, `to`, `trigger`
 - All `also_depends_on` references resolve to existing node IDs
+- Nodes with `support_level: explicit` should include `source_refs`
 
 ## 9. Cross-Layer Binding
 
 ### Claim Proof → Experiment Resolution
 - Every `E\d+` in a claim's `**Proof**: [...]` must exist in experiments.md
 - Proof-linked experiments should have evidence files whose labels and row contents actually match the compared systems or measurements
+- Claim wording should be auditable against `Evidence basis`; broader language should be isolated to `Interpretation`
 
 ### Experiment Verifies → Claim Resolution
 - Every `C\d+` in an experiment's `**Verifies**` must exist in claims.md
