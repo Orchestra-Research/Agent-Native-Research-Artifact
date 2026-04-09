@@ -97,6 +97,26 @@ Body MUST include a Layer Index — a table for each layer listing every file:
 
 ---
 
+## Evidence Naming and Fidelity
+
+The evidence layer has two different object types:
+
+1. **Raw source evidence**
+   - Faithful transcription of one source table or figure
+   - Must preserve the original source identifier and caption
+   - Example: `evidence/tables/table3_imagenet_validation.md`
+
+2. **Derived subset evidence**
+   - Filtered or recomposed view created for a specific claim
+   - Must NOT masquerade as the original source object
+   - Filename should include `derived_`, `subset_`, or equivalent
+   - Must declare which raw source object it came from
+   - Example: `evidence/tables/derived_from_table3_residual_depth_slice.md`
+
+Rule: if a filename includes a source label such as `table3` or `figure4`, it should faithfully represent that exact source object rather than a curated subset.
+
+---
+
 ## logic/problem.md
 
 ```markdown
@@ -143,6 +163,7 @@ Each claim MUST have ALL fields:
 ```
 
 Proof MUST reference experiment IDs from experiments.md.
+Each proofed experiment should in turn be backed by evidence files whose rows or measurements actually match the claim being asserted.
 
 ---
 
@@ -263,6 +284,44 @@ Same format as training.md for model/architecture configs.
 - **Key dependencies**: {list with versions}
 - **Random seeds**: {if specified}
 ```
+
+---
+
+## evidence/tables/{file}.md
+
+Raw source-table transcription:
+
+```markdown
+# Table {N} - {Caption or short description}
+
+**Source**: Table {N} in {paper/report title}
+**Caption**: {verbatim or near-verbatim caption}
+**Extraction type**: raw_table
+
+| ... | ... |
+| --- | --- |
+| ... | ... |
+```
+
+Derived subset:
+
+```markdown
+# Derived subset - {Short description}
+
+**Source**: Derived from Table {N} in {paper/report title}
+**Caption**: {what part of the source table this subset preserves}
+**Extraction type**: derived_subset
+**Derived from**: `table{N}_{raw_file_name}.md`
+
+| ... | ... |
+| --- | --- |
+| ... | ... |
+```
+
+Rules:
+- Raw source-table files should reproduce the original row set relevant to that table, not a claim-specific slice
+- If you drop rows, rename the file as a derived subset and declare the parent source
+- Do not combine rows from multiple source tables while retaining a single original table number in the filename
 
 ---
 

@@ -94,6 +94,13 @@ Strip narrative framing. Extract the raw knowledge atoms:
 - Negative results, ablation findings, rejected alternatives
 - Implementation tricks, convergence hacks, sensitivity observations
 
+Before moving on, perform an **evidence capture pass**:
+- For every source table or figure you plan to cite, first capture the original source identifier and caption exactly (`Table 2`, `Figure 4`, etc.)
+- Transcribe the raw table/figure content before making any claim-specific summary
+- If you create a filtered view for one claim, store it as a **derived subset**, not as the original table itself
+- Never label a subset or merged summary as `Table N` unless it reproduces the original source table faithfully
+- If PDF extraction is ambiguous, re-read the page with layout preserved or inspect the page manually before writing evidence files
+
 **Stage 2 — Cognitive Mapping**
 Map extracted atoms to `/logic/`:
 - **problem.md**: observations (with numbers) → gaps → key insight → assumptions
@@ -144,6 +151,12 @@ directory structure and field-level requirements for every file.
 - `evidence/tables/*.md` — ALL result tables (exact cell values, never rounded)
 - `evidence/figures/*.md` — ALL quantitative figures (extracted data points)
 
+Evidence-generation rules:
+- Preserve **raw source tables** separately from any **derived subset** views
+- A file named after a source object (for example `table3_...`) must match that source object's caption and contents
+- If only a subset is included, the filename must say `derived_`, `subset_`, or equivalent, and the file must state what it was derived from
+- Do not merge rows from different source tables into one evidence file unless the file is explicitly labeled as a derived comparison
+
 ### Step 4: Validate
 
 Run ARA Seal Level 1 validation. Perform these checks:
@@ -161,6 +174,9 @@ Run ARA Seal Level 1 validation. Perform these checks:
 - Experiment Verifies references (C01, C02...) resolve to claims.md
 - Heuristic Code ref paths resolve to actual files in src/execution/
 - Evidence files contain Markdown tables with **Source** fields
+- Evidence file names, source labels, and captions agree on the original table/figure identifier
+- Any file named like a raw source table is a faithful transcription rather than a filtered subset
+- Claims only cite experiments whose evidence actually contains the compared rows or measurements
 
 ### Step 5: Fix & Iterate
 
@@ -188,6 +204,8 @@ Print a summary:
 5. **Cross-layer binding**: Claims ↔ Experiments ↔ Evidence ↔ Code refs must all resolve
 6. **Dead ends matter**: Include failed approaches, rejected alternatives, ablation findings
 7. **"Not specified"**: If information is genuinely unavailable, write "Not specified in paper" — never guess
+8. **No fake source labels**: Never call a derived subset `Table N` or `Figure N` unless it faithfully reproduces the original source object
+9. **No synthetic trace history**: Do not invent decisions, dead ends, or experiments that are not explicit in the provided inputs; if a trajectory is inferred, mark it as inferred or omit it
 
 ## Reference Files
 

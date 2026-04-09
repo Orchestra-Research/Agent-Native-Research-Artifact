@@ -86,6 +86,9 @@ All must exist with >10 bytes:
 For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 - Must contain a Markdown table (`|...|...|` pattern)
 - Must contain `**Source**` field
+- If the filename includes `table{N}` or `figure{N}`, the `**Source**` field must reference the same identifier
+- If the file is a derived subset, it must say so explicitly via `**Extraction type**: derived_subset` or equivalent
+- Raw source-table files should not silently omit rows while still presenting themselves as the original table
 
 ## 7. evidence/README.md
 
@@ -112,6 +115,7 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 
 ### Claim Proof → Experiment Resolution
 - Every `E\d+` in a claim's `**Proof**: [...]` must exist in experiments.md
+- Proof-linked experiments should have evidence files whose labels and row contents actually match the compared systems or measurements
 
 ### Experiment Verifies → Claim Resolution
 - Every `C\d+` in an experiment's `**Verifies**` must exist in claims.md
@@ -124,3 +128,7 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 
 ### Tree Evidence → Claims (YAML)
 - Any `C\d+` in a tree node's `evidence` field must exist in claims.md
+
+### Trace Hygiene
+- Do not add dead_end, decision, or experiment nodes that are unsupported by the provided source material
+- If a node is reconstructed from partial evidence rather than stated explicitly, it should be marked as inferred or excluded from Seal Level 1 outputs

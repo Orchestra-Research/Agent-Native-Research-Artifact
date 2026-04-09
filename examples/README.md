@@ -15,3 +15,17 @@ To generate a full artifact, install the ingestor skill and run:
 ```
 /ingestor path/to/paper.pdf
 ```
+
+## ResNet demo
+
+This repo now also includes a concrete ResNet-oriented demo flow:
+
+- `resnet-paper.pdf`: the original ResNet paper PDF
+- `resnet-ara-example/`: a worked ARA-style artifact for the degradation-to-residual-learning slice
+- `resnet-walkthrough.md`: how to use the ingestor workflow on this example
+
+Suggested order:
+
+1. Read `resnet-walkthrough.md`
+2. Open `resnet-paper.pdf`
+3. Compare the paper against `resnet-ara-example/`
