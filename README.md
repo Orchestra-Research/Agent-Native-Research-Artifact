@@ -75,7 +75,7 @@ artifact/
 - **Progressive disclosure**: `PAPER.md` (~200 tokens) tells agents if the artifact is relevant. Deeper files load on demand.
 - **Cross-layer binding**: Claims reference experiments, experiments reference evidence, heuristics reference code. Everything is linked.
 - **Dead ends preserved**: Failed approaches and rejected alternatives are first-class nodes in the exploration tree — they prevent agents from rediscovering known failures.
-- **Provenance tracking**: Every entry carries a provenance tag (`user`, `ai-suggested`, `ai-executed`, `user-revised`) distinguishing human-confirmed facts from AI inferences.
+- **Provenance tracking**: Every entry carries a provenance tag (`user`, `ai-suggested`, `ai-executed`, `user-revised`) distinguishing human-confirmed facts from AI proposals.
 
 ## Skills
 

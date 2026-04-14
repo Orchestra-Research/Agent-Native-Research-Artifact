@@ -131,9 +131,9 @@ Reconstruct the research DAG for `/trace/exploration_tree.yaml`:
 - Dead ends from ablations/rejected alternatives = typed leaf nodes
 - ≥8 nodes, must include dead_end and decision types
 - Use `also_depends_on` for DAG convergence points
-- Every node must declare whether it is `explicit` from source material or `inferred` from reconstruction
-- Explicit nodes should carry source references (table/figure/section labels)
-- Inferred nodes are allowed only when they help reconstruct the paper's logic without pretending to be literal session logs
+- Every node must be `explicit` — directly grounded in source material — or omitted entirely
+- Explicit nodes must carry source references (table/figure/section labels)
+- Do NOT create nodes that require inference or reconstruction; if a research step is not directly stated in the inputs, leave it out
 
 ### Step 3: Generate Files
 
@@ -187,8 +187,8 @@ Run ARA Seal Level 1 validation. Perform these checks:
 - Any file named like a raw source table is a faithful transcription rather than a filtered subset
 - Claims only cite experiments whose evidence actually contains the compared rows or measurements
 - Claim wording does not outrun the evidence type (for example, validation tables alone should not be used to claim training-dynamics improvements)
-- Trace nodes declare `support_level: explicit|inferred`
-- Trace nodes with `support_level: explicit` include source references
+- Trace nodes declare `support_level: explicit` (only value allowed)
+- Trace nodes include `source_refs` pointing to specific source material
 
 ### Step 5: Fix & Iterate
 
@@ -217,7 +217,7 @@ Print a summary:
 6. **Dead ends matter**: Include failed approaches, rejected alternatives, ablation findings
 7. **"Not specified"**: If information is genuinely unavailable, write "Not specified in paper" — never guess
 8. **No fake source labels**: Never call a derived subset `Table N` or `Figure N` unless it faithfully reproduces the original source object
-9. **No synthetic trace history**: Do not invent decisions, dead ends, or experiments that are not explicit in the provided inputs; if a trajectory is inferred, mark it as inferred or omit it
+9. **No synthetic trace history**: Do not invent decisions, dead ends, or experiments that are not explicit in the provided inputs; if a research step cannot be grounded in source material, omit it entirely
 10. **Evidence-limited wording**: Do not use stronger language than the evidence supports; separate direct observations from interpretation
 
 ## Reference Files

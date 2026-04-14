@@ -66,7 +66,7 @@ User typed/said it explicitly?
 AI ran code/test/command that produced this?
   → provenance: ai-executed
 
-AI noticed pattern, inferred meaning, proposed interpretation?
+AI noticed pattern, proposed meaning or interpretation?
   → provenance: ai-suggested
 
 User corrected an AI suggestion?

@@ -21,7 +21,7 @@ abstract: "Deeper neural networks are more difficult to train. We present a resi
 
 This test artifact captures the core ResNet slice that motivates the ARA format particularly well: deeper plain networks degrade as depth increases, residual reformulation changes the optimization problem, and evidence ties the mechanism directly to empirical gains. The artifact intentionally focuses on the degradation-to-residual-learning path rather than reconstructing every result from the full paper.
 
-The goal of this folder is to simulate what the `ingestor` skill would produce for a concrete paper input. It binds claims, experiments, evidence, code stubs, and the failed plain-depth branch into one traversable artifact. When the paper does not present an explicit research-session log, reconstructed trace decisions are marked as inferred rather than presented as direct historical facts.
+The goal of this folder is to simulate what the `ingestor` skill would produce for a concrete paper input. It binds claims, experiments, evidence, code stubs, and the failed plain-depth branch into one traversable artifact. Every trace node is grounded in explicit source material — if a research step is not directly stated in the paper, it is omitted rather than reconstructed.
 
 ## Layer Index
 

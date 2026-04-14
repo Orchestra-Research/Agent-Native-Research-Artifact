@@ -2,45 +2,87 @@
 
 ## Mathematical Formulation
 
-Instead of fitting `H(x)` directly, the residual block learns:
+### Residual Function (§3.1)
 
-`F(x) := H(x) - x`
+For a building block with input x:
 
-so the block output is:
+$$y = F(x, \{W_i\}) + x$$
 
-`y = F(x, {W_i}) + x`
+Where F is the residual mapping to be learned.
 
-When dimensions do not match:
+For a two-layer block:
 
-`y = F(x, {W_i}) + W_s x`
+$$F = W_2 \cdot \sigma(W_1 \cdot x)$$
 
-where `W_s` is a learned projection, typically a 1x1 convolution.
+where $\sigma$ denotes ReLU. Biases are omitted for simplicity.
+
+When input and output dimensions differ, a linear projection is applied:
+
+$$y = F(x, \{W_i\}) + W_s \cdot x$$
+
+The operation F + x is performed by element-wise addition after a shortcut connection.
+
+### Bottleneck Function (§4.1)
+
+For a three-layer bottleneck block with input x of dimension d:
+
+$$F(x) = W_3 \cdot \sigma(W_2 \cdot \sigma(W_1 \cdot x))$$
+
+where W_1 is 1x1 (d -> d/4), W_2 is 3x3 (d/4 -> d/4), W_3 is 1x1 (d/4 -> d).
 
 ## Pseudocode
 
-```text
-function residual_block(x, conv1, bn1, conv2, bn2, shortcut):
-    residual = conv1(x)
-    residual = bn1(residual)
-    residual = relu(residual)
-    residual = conv2(residual)
-    residual = bn2(residual)
-
-    skip = shortcut(x)
-    y = residual + skip
-    return relu(y)
 ```
+function ResidualBlock(x, W1, W2, shortcut_type):
+    # Residual branch
+    h = conv3x3(x, W1)
+    h = batch_norm(h)
+    h = relu(h)
+    h = conv3x3(h, W2)
+    h = batch_norm(h)
 
-## Step-by-step Explanation
+    # Shortcut branch
+    if shortcut_type == "identity":
+        s = x
+    elif shortcut_type == "projection":
+        s = conv1x1(x, Ws, stride=2)
+        s = batch_norm(s)
 
-1. Apply the first convolution, normalization, and activation to produce an intermediate residual feature.
-2. Apply the second convolution and normalization to complete the residual branch.
-3. Route the input through either an identity shortcut or a projection shortcut.
-4. Add the shortcut output to the residual branch output.
-5. Apply ReLU after the merge.
+    # Merge
+    y = h + s
+    y = relu(y)
+    return y
+
+function BottleneckBlock(x, W1, W2, W3, shortcut_type):
+    h = conv1x1(x, W1)      # reduce
+    h = batch_norm(h); h = relu(h)
+    h = conv3x3(h, W2)      # spatial
+    h = batch_norm(h); h = relu(h)
+    h = conv1x1(h, W3)      # restore
+    h = batch_norm(h)
+
+    if shortcut_type == "identity":
+        s = x
+    elif shortcut_type == "projection":
+        s = conv1x1(x, Ws, stride=2)
+        s = batch_norm(s)
+
+    y = h + s
+    y = relu(y)
+    return y
+```
 
 ## Complexity Analysis
 
-- For the basic 18/34-layer block, the residual branch uses two 3x3 convolutions.
-- The identity-shortcut case adds negligible parameter cost beyond the residual branch itself.
-- Projection shortcuts add parameters only at stage transitions where dimensions change.
+From Table 1 and §3.3:
+
+| Model | Layers | FLOPs | Parameters |
+|-------|--------|-------|------------|
+| VGG-19 | 19 | 19.6 billion | — |
+| Plain-34 | 34 | 3.6 billion | — |
+| ResNet-34 | 34 | 3.6 billion | — |
+| ResNet-50 | 50 | ~3.8 billion | — |
+| ResNet-101 | 101 | ~7.6 billion | — |
+| ResNet-152 | 152 | 11.3 billion | — |
+
+The 34-layer ResNet has only 18% of the FLOPs of VGG-19, while achieving better accuracy. ResNet-152 has lower complexity than VGG-16/19 in terms of FLOPs.

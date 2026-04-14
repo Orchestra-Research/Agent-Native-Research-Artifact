@@ -336,17 +336,17 @@ Each node should distinguish direct source support from reconstruction:
 tree:
   - id: N01
     type: question
-    support_level: explicit | inferred
-    source_refs: ["Table 2", "§4.1"]   # recommended for explicit nodes
+    support_level: explicit              # only valid value — inferred nodes are forbidden
+    source_refs: ["Table 2", "§4.1"]   # required for every node
     title: "{...}"
     description: "{...}"
 ```
 
 Rules:
-- `support_level: explicit` means the node is directly grounded in the provided source material
-- `support_level: inferred` means the node is a reconstruction of the paper's logic, not a literal session record
-- Explicit nodes should include `source_refs`
-- Inferred nodes must not be presented as if they were directly observed historical events
+- `support_level: explicit` is the only valid value — every node must be directly grounded in the provided source material
+- Every node must include `source_refs` pointing to specific tables, figures, or sections
+- If a research step cannot be grounded in explicit source material, omit the node entirely
+- Do not reconstruct, infer, or speculate about research steps not documented in the inputs
 
 ---
 

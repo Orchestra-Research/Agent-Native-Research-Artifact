@@ -1,13 +1,11 @@
-# Evidence
+# Evidence Index
 
-| File | Source | Type | Claims | Description |
-|------|--------|------|--------|-------------|
-| `tables/table2_imagenet_plain_vs_residual.md` | Table 2 | raw_table | C01, C02 | Exact 18/34-layer plain-vs-residual top-1 validation comparison |
-| `tables/table3_imagenet_validation_full.md` | Table 3 | raw_table | C03, C04 | Full ImageNet validation table including plain-34, ResNet-34 A/B/C, and deeper residual models |
-| `tables/derived_from_table3_residual_depth_slice.md` | Derived from Table 3 | derived_subset | C03 | Filtered residual-depth rows used for the depth-scaling claim |
-| `tables/derived_from_table3_shortcut_options.md` | Derived from Table 3 | derived_subset | C04 | Filtered plain-34 and ResNet-34 A/B/C rows used for the shortcut-variant claim |
+## Tables
 
-## Notes
-
-- Table values are transcribed directly from the paper's reported results for the represented slice.
-- This test artifact emphasizes the degradation-to-residual-learning path rather than the full paper.
+| File | Source | Claims | Description |
+|------|--------|--------|-------------|
+| [tables/table2_imagenet_plain_vs_residual.md](tables/table2_imagenet_plain_vs_residual.md) | Table 2, §4.1 | C01, C02 | Top-1 error for plain and ResNet at 18 and 34 layers |
+| [tables/table3_imagenet_validation_full.md](tables/table3_imagenet_validation_full.md) | Table 3, §4.1 | C01, C03, C04 | Full 10-crop validation results including shortcut variants and deeper models |
+| [tables/table4_imagenet_single_model.md](tables/table4_imagenet_single_model.md) | Table 4, §4.1 | C03 | Single-model results on ImageNet validation set |
+| [tables/derived_from_table3_residual_depth_slice.md](tables/derived_from_table3_residual_depth_slice.md) | Derived from Table 3 | C03 | Subset showing depth scaling for residual models only |
+| [tables/derived_from_table3_shortcut_options.md](tables/derived_from_table3_shortcut_options.md) | Derived from Table 3 | C04 | Subset comparing shortcut options A, B, C |

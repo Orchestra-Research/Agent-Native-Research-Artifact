@@ -69,11 +69,11 @@ Every entry must carry a provenance marker:
 | Tag | When | Example |
 |-----|------|---------|
 | `user` | User explicitly stated or confirmed | "Let's use GQA" |
-| `ai-suggested` | AI inferred; user did NOT confirm | AI notices a pattern |
+| `ai-suggested` | AI proposed; user did NOT confirm | AI notices a pattern |
 | `ai-executed` | AI performed the action | AI wrote scheduler.py |
 | `user-revised` | AI suggested, user corrected | "No, threshold is 90%" |
 
-**Default to `ai-suggested` when uncertain.** Never mark inferences as `user`.
+**Default to `ai-suggested` when uncertain.** Never mark AI proposals as `user`.
 
 ## ARA Directory Structure
 
@@ -285,7 +285,7 @@ mkdir -p ara/{logic/solution,src/{configs,kernel},trace/sessions,evidence/{table
 ```
 
 Then write:
-1. `ara/PAPER.md` — root manifest (infer title, authors, venue from project context)
+1. `ara/PAPER.md` — root manifest (derive title, authors, venue from project context)
 2. `ara/trace/sessions/session_index.yaml` — `sessions: []`
 3. `ara/trace/exploration_tree.yaml` — `tree: []`
 4. `ara/staging/observations.yaml` — `observations: []`

@@ -105,7 +105,7 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 - At least 1 `dead_end` node exists
 - At least 1 `decision` node exists
 - Every node has `id` and `type` fields
-- Every node has `support_level` in {explicit, inferred}
+- Every node has `support_level: explicit` (the only valid value; inferred nodes are forbidden)
 - Type-specific required fields:
   - question: `description`
   - experiment: `result`
@@ -113,7 +113,7 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
   - decision: `choice`, `alternatives`
   - pivot: `from`, `to`, `trigger`
 - All `also_depends_on` references resolve to existing node IDs
-- Nodes with `support_level: explicit` should include `source_refs`
+- Every node must include `source_refs` (since all nodes must be explicit)
 
 ## 9. Cross-Layer Binding
 
@@ -136,4 +136,4 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 
 ### Trace Hygiene
 - Do not add dead_end, decision, or experiment nodes that are unsupported by the provided source material
-- If a node is reconstructed from partial evidence rather than stated explicitly, it should be marked as inferred or excluded from Seal Level 1 outputs
+- If a node cannot be grounded in explicit source material, it must be excluded entirely — do not include reconstructed or inferred nodes

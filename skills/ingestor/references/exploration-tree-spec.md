@@ -30,7 +30,8 @@ tree:
 
           - id: N04
             type: decision
-            support_level: inferred
+            support_level: explicit
+            source_refs: ["§3.2"]
             title: "{What was decided}"
             choice: "{The chosen approach}"
             alternatives:
@@ -42,7 +43,8 @@ tree:
 
       - id: N03
         type: dead_end
-        support_level: inferred
+        support_level: explicit
+        source_refs: ["§4.3", "Table 6"]
         title: "{What was tried and failed}"
         hypothesis: "{What was expected}"
         failure_mode: "{Why it failed}"
@@ -98,8 +100,8 @@ A change in research direction.
 4. **Must include dead_end nodes**: At least 1 from ablations or rejected alternatives
 5. **Must include decision nodes**: At least 1 documenting a design choice
 6. **Every node has**: `id` (N01, N02...), `type`, `title`
-7. **Every node has `support_level`**: `explicit` or `inferred`
-8. **Explicit nodes should have `source_refs`**: table/figure/section references from the input material
+7. **Every node has `support_level: explicit`**: only source-grounded nodes are allowed; omit anything that would require inference
+8. **Every node must have `source_refs`**: table/figure/section references from the input material
 9. **`also_depends_on`**: Only for DAG convergence (node has multiple parents beyond nesting)
 
 ## Extraction Strategy
@@ -113,9 +115,9 @@ When building from a PDF:
 - **"This approach fails because..."** → dead_end nodes
 
 Support-level guidance:
-- Mark a node `explicit` only if the paper directly reports it
-- Mark a node `inferred` if you are reconstructing a plausible research decision from the narrative structure
-- Prefer omission over fabricating a highly specific inferred node
+- Only include a node if the source material directly reports or states it
+- If a research step is not explicitly documented, omit it entirely — do not reconstruct or infer
+- Prefer a smaller, fully-grounded tree over a larger tree with speculative nodes
 
 When building from experiment logs:
 - Each experiment run → experiment node

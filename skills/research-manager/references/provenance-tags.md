@@ -4,7 +4,7 @@
 
 In a human-AI collaborative research process, the origin of each piece of knowledge determines
 its epistemic status. A claim the user explicitly stated has different weight than one the AI
-inferred from code output. Provenance tracking ensures:
+proposed based on code output. Provenance tracking ensures:
 
 1. **Auditability**: Reviewers/collaborators can trace every assertion to its source
 2. **Trust calibration**: AI suggestions are clearly marked as unconfirmed
@@ -38,15 +38,15 @@ The user explicitly stated, typed, or confirmed this information.
   choice: "GQA reduces KV cache by 8x with <1% quality loss"
 ```
 
-### `ai-suggested` — AI Inference (Unconfirmed)
+### `ai-suggested` — AI Proposal (Unconfirmed)
 
-The AI inferred, proposed, or hypothesized this based on context. The user has NOT
+The AI proposed or hypothesized this based on context. The user has NOT
 explicitly confirmed it.
 
 **When to apply:**
 - AI observes a pattern in code/output and proposes an interpretation
 - AI suggests a research direction
-- AI infers a claim from experimental results
+- AI proposes a claim based on experimental results
 - AI proposes a classification for an observation
 - AI suggests what a decision's alternatives might have been
 
@@ -55,7 +55,7 @@ explicitly confirmed it.
 ## C07: The overhead-aware refiner prevents QoE collapse under sustained bursts
 - **Statement**: Without the refiner, preemption overhead accumulates and degrades QoE
 - **Provenance**: ai-suggested
-<!-- AI inferred this from the ablation results; user has not confirmed -->
+<!-- AI proposed this based on the ablation results; user has not confirmed -->
 ```
 
 ```yaml
@@ -177,7 +177,7 @@ provenance_summary:
   confirmation_rate: 0.625   # user / (user + ai-suggested)
 ```
 
-This helps track how much of the research knowledge is human-confirmed vs. AI-inferred,
+This helps track how much of the research knowledge is human-confirmed vs. AI-proposed,
 providing a trust signal for the overall artifact quality.
 
 ## Rules for Provenance Integrity

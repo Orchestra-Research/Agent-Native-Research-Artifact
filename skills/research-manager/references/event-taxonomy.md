@@ -87,7 +87,7 @@ Who generated this information?
 User said it directly (typed it, stated it, confirmed it)
   → provenance: user
 
-AI inferred it from code, output, or conversation context
+AI proposed it based on code, output, or conversation context
   → provenance: ai-suggested
 
 AI performed an action (wrote code, ran test, made edit)

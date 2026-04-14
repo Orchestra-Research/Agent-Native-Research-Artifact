@@ -1,44 +1,56 @@
 # Architecture
 
-## Residual Block
+## Residual Block (Basic)
 
-- **Purpose**: Replace a plain stacked mapping with a residual branch plus shortcut merge.
-- **Inputs**: Feature tensor `x` with shape `[B, C, H, W]`
-- **Outputs**: Feature tensor `y` with matched or projected channel/stride shape
-- **Interactions**: Feeds stage-to-stage through repeated block composition
-- **Key design choices**:
-  - Two 3x3 convolutions for the 18/34-layer family
-  - Identity shortcut when dimensions match
-  - Projection or padding when dimensions change
-  - Element-wise addition followed by ReLU
+The fundamental building block for ResNet-18 and ResNet-34.
 
-## Shortcut Path
+- **Input**: Feature tensor x of shape (H, W, C)
+- **Output**: y = F(x) + x of shape (H, W, C)
+- **Components**:
+  - 3x3 conv (C filters, stride 1, padding 1) -> BN -> ReLU
+  - 3x3 conv (C filters, stride 1, padding 1) -> BN
+  - Element-wise addition with shortcut x
+  - ReLU
+- **Key design choice**: No dropout; BN is applied after each convolution and before activation (§3.4)
 
-- **Purpose**: Preserve an identity-compatible route for information and gradients
-- **Inputs**: Block input `x`
-- **Outputs**: Either `x` or `W_s x`
-- **Interactions**: Added to the residual branch output before activation
-- **Key design choices**:
-  - Option A: identity with zero-padding when dimensions increase
-  - Option B: projection only when dimensions increase
-  - Option C: projection for all shortcuts
+## Residual Block (Bottleneck)
 
-## Stage Stack
+The building block for ResNet-50, ResNet-101, and ResNet-152.
 
-- **Purpose**: Organize feature extraction across ImageNet spatial scales
-- **Inputs**: Stem output from the initial 7x7 convolution and max-pooling
-- **Outputs**: Stage-wise features at 56x56, 28x28, 14x14, and 7x7
-- **Interactions**: Repeated residual blocks compose each stage
-- **Key design choices**:
-  - `conv2_x` through `conv5_x` organize depth at decreasing resolution
-  - Depth scaling changes block counts while preserving the stage abstraction
+- **Input**: Feature tensor x of shape (H, W, 4C)
+- **Output**: y = F(x) + x of shape (H, W, 4C)
+- **Components**:
+  - 1x1 conv (C filters) -> BN -> ReLU (dimension reduction)
+  - 3x3 conv (C filters) -> BN -> ReLU (spatial convolution)
+  - 1x1 conv (4C filters) -> BN (dimension restoration)
+  - Element-wise addition with shortcut x
+  - ReLU
+- **Key design choice**: Parameter-free identity shortcuts are especially important here; projection shortcuts would double time complexity and model size (§4.1)
 
-## Classification Head
+## Shortcut Connection
 
-- **Purpose**: Convert final spatial features into ImageNet logits
-- **Inputs**: Final 7x7 feature map stack
-- **Outputs**: 1000-way class logits
-- **Interactions**: Global average pooling feeds the final fully connected classifier
-- **Key design choices**:
-  - Global average pooling avoids large fully connected hidden stacks
-  - Final classifier remains simple so the comparison isolates the residual mechanism
+- **Identity shortcut**: y = F(x) + x; used when dimensions match
+- **Projection shortcut**: y = F(x) + W_s * x; used when dimensions change (done by 1x1 conv with stride 2)
+- **Options evaluated**:
+  - (A) Zero-padding for dimension increase, identity elsewhere
+  - (B) Projection only for dimension changes, identity elsewhere
+  - (C) All shortcuts are projections
+
+## Stage-Level Design
+
+Following VGG philosophy (§3.3):
+
+| Stage | Output size | ResNet-34 blocks | ResNet-50/101/152 blocks | Filters |
+|-------|-------------|------------------|--------------------------|---------|
+| conv1 | 112x112 | 7x7 conv, stride 2 | 7x7 conv, stride 2 | 64 |
+| pool | 56x56 | 3x3 max pool, stride 2 | 3x3 max pool, stride 2 | 64 |
+| conv2_x | 56x56 | 3 basic blocks | 3/3/3 bottleneck blocks | 64 (256) |
+| conv3_x | 28x28 | 4 basic blocks | 4/4/8 bottleneck blocks | 128 (512) |
+| conv4_x | 14x14 | 6 basic blocks | 6/23/36 bottleneck blocks | 256 (1024) |
+| conv5_x | 7x7 | 3 basic blocks | 3/3/3 bottleneck blocks | 512 (2048) |
+| output | 1x1 | global avg pool, 1000-d fc, softmax | same | — |
+
+Rules:
+- Same feature map size -> same number of filters
+- Feature map size halves -> number of filters doubles
+- Downsampling by stride-2 convolutions at conv3_1, conv4_1, conv5_1
