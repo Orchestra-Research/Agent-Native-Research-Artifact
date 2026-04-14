@@ -102,16 +102,16 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 - Has top-level `tree` key
 - ≥8 nodes total (counted recursively through children)
 - All node types in {question, decision, experiment, dead_end, pivot}
-- At least 1 `dead_end` node exists
-- At least 1 `decision` node exists
 - Every node has `id` and `type` fields
 - Every node has `support_level: explicit` (the only valid value; inferred nodes are forbidden)
 - Type-specific required fields:
   - question: `description`
   - experiment: `result`
-  - dead_end: `hypothesis`, `failure_mode`, `lesson`
-  - decision: `choice`, `alternatives`
-  - pivot: `from`, `to`, `trigger`
+  - dead_end: `hypothesis`, `failure_mode`, `lesson`, `framing_basis`
+  - decision: `choice`, `alternatives`, `framing_basis`
+  - pivot: `from`, `to`, `trigger`, `framing_basis`
+- Narrative type gate: `dead_end`, `decision`, and `pivot` nodes must include `framing_basis` with a direct quote or specific citation proving the source material uses that framing. A negative experimental result alone does NOT justify `dead_end`; a method proposal alone does NOT justify `decision`.
+- A tree with only `question` and `experiment` nodes is valid — do not force narrative types
 - All `also_depends_on` references resolve to existing node IDs
 - Every node must include `source_refs` (since all nodes must be explicit)
 

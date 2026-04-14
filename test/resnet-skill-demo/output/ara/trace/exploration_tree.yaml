@@ -20,42 +20,32 @@ tree:
           for the 18-layer plain model (10-crop validation). Training
           error is also higher for the deeper model throughout training.
         evidence: [C02, "Table 2", "Figure 4"]
-        children:
 
-          - id: N03
-            type: dead_end
-            support_level: explicit
-            source_refs: ["§4.1", "Table 2", "Figure 4 left"]
-            title: Deeper plain stacking fails to improve accuracy
-            hypothesis: >
-              A deeper plain network should match or exceed the shallower
-              one since its solution space is a strict superset.
-            failure_mode: >
-              The 34-layer plain network has higher training and validation
-              error than the 18-layer model. The paper explicitly rules out
-              vanishing gradients (BN ensures healthy norms) and overfitting
-              (training error is also higher).
-            lesson: >
-              Depth alone does not help; the formulation of the layers
-              matters. This directly motivates the residual reformulation.
+      - id: N03
+        type: experiment
+        support_level: explicit
+        source_refs: ["§4.1", "Table 2", "Figure 4 left"]
+        title: Plain-34 exhibits degradation compared to plain-18
+        result: >
+          The 34-layer plain network has higher training and validation
+          error than the 18-layer model (28.54% vs 27.94% top-1). The
+          paper rules out vanishing gradients (BN ensures healthy norms)
+          and overfitting (training error is also higher). This confirms
+          the degradation problem is an optimization difficulty.
+        evidence: [C02, "Table 2", "Figure 4"]
 
       - id: N04
-        type: decision
+        type: experiment
         support_level: explicit
         source_refs: ["§3", "§3.1", "Eq.1"]
-        title: Reformulate layers as residual functions F(x) = H(x) - x
-        choice: >
-          Instead of learning the unreferenced mapping H(x), explicitly
-          let stacked layers fit F(x) = H(x) - x and add a shortcut
-          connection so the output is F(x) + x.
-        alternatives:
-          - Keep the plain stack and rely on BN plus initialization alone
-          - Highway networks with learned gating on shortcuts
-        evidence: >
-          §3 argues that if the identity mapping were optimal, it would be
-          easier to push F(x) toward zero than to fit identity through
-          nonlinear layers. The construction argument in §1 shows that
-          added identity layers should not increase error.
+        title: Propose residual reformulation F(x) = H(x) - x
+        result: >
+          The paper introduces a residual learning framework where stacked
+          layers fit F(x) = H(x) - x rather than the unreferenced mapping
+          H(x) directly. The output becomes F(x) + x via shortcut connections.
+          §3 hypothesizes that pushing F(x) toward zero is easier than
+          learning identity through nonlinear layers.
+        evidence: [C01]
         children:
 
           - id: N05
@@ -75,6 +65,11 @@ tree:
                 type: decision
                 support_level: explicit
                 source_refs: ["§4.1", "Table 3"]
+                framing_basis: >
+                  "So we do not use option C in the rest of this paper,
+                  to reduce memory/time complexity and model sizes.
+                  Identity shortcuts are particularly important for not
+                  increasing the complexity of the bottleneck architectures."
                 title: Choose shortcut option B for deeper models
                 choice: >
                   Use projection shortcuts only for dimension changes,
@@ -86,8 +81,7 @@ tree:
                 evidence: >
                   Table 3 shows A at 25.03/7.76, B at 24.52/7.46,
                   C at 24.19/7.40. The small differences indicate projection
-                  is not essential. §4.1 states identity shortcuts are
-                  particularly important for bottleneck complexity.
+                  is not essential.
 
               - id: N07
                 type: experiment
@@ -112,18 +106,14 @@ tree:
             evidence: [C03, "Table 3", "Table 4"]
 
       - id: N09
-        type: dead_end
+        type: experiment
         support_level: explicit
         source_refs: ["§4.2", "Table 6"]
-        title: 1202-layer ResNet overfits on CIFAR-10
-        hypothesis: >
-          Continuing to scale depth should continue to improve accuracy,
-          as demonstrated on ImageNet up to 152 layers.
-        failure_mode: >
+        title: 1202-layer ResNet on CIFAR-10 shows no accuracy gain over 110-layer
+        result: >
           The 1202-layer model achieves similar training error to the
-          110-layer model but has higher test error (7.93% vs. 6.43%),
-          suggesting overfitting on the small CIFAR-10 dataset (50k images).
-        lesson: >
-          Extreme depth on small datasets introduces unnecessary parameters.
-          The paper notes regularization techniques (maxout, dropout)
-          may help but are orthogonal to their focus on optimization.
+          110-layer model but has higher test error (7.93% vs. 6.43%).
+          The paper notes this may be due to overfitting on the small
+          CIFAR-10 dataset (50k images) and suggests regularization
+          techniques may help but are orthogonal to their focus.
+        evidence: ["Table 6"]

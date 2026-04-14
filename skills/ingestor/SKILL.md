@@ -125,15 +125,15 @@ Generate `/src/`:
 - If rubric provided: produce `rubric/requirements.md` mapping every leaf node
 
 **Stage 4 — Exploration Graph Extraction**
-Reconstruct the research DAG for `/trace/exploration_tree.yaml`:
+Build the research DAG for `/trace/exploration_tree.yaml`:
 - Root nodes = central research questions
-- Experiments and decisions nest as children
-- Dead ends from ablations/rejected alternatives = typed leaf nodes
-- ≥8 nodes, must include dead_end and decision types
+- Experiments nest as children under the questions they address
+- ≥8 nodes covering the paper's key research trajectory
 - Use `also_depends_on` for DAG convergence points
 - Every node must be `explicit` — directly grounded in source material — or omitted entirely
-- Explicit nodes must carry source references (table/figure/section labels)
+- Explicit nodes must carry `source_refs` (table/figure/section labels)
 - Do NOT create nodes that require inference or reconstruction; if a research step is not directly stated in the inputs, leave it out
+- **Narrative types (`dead_end`, `decision`, `pivot`) require `framing_basis`**: a direct quote from the source proving it uses that framing. If you cannot provide a quote, downgrade to a neutral type (`experiment`, `question`). A tree with only questions and experiments is valid.
 
 ### Step 3: Generate Files
 

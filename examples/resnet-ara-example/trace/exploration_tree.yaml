@@ -13,25 +13,22 @@ tree:
         source_refs: ["Table 2", "Section 4.1"]
         result: The 34-layer plain model validates worse than the 18-layer plain model in the matched comparison reported by the paper.
         evidence: [C02, "Table 2"]
-        children:
-          - id: N03
-            type: dead_end
-            support_level: explicit
-            source_refs: ["Table 2", "§4.1"]
-            title: Keep stacking plain layers without shortcuts
-            hypothesis: A deeper plain network should at least match the shallower solution space and therefore should not optimize worse.
-            failure_mode: The deeper plain network trains and validates worse, revealing degradation.
-            lesson: Depth alone is not enough; the formulation of the mapping matters.
+
+      - id: N03
+        type: experiment
+        support_level: explicit
+        source_refs: ["§4.1", "Table 2", "Figure 4 left"]
+        title: Plain-34 exhibits degradation compared to plain-18
+        result: The 34-layer plain network has higher training and validation error than the 18-layer model (28.54% vs 27.94% top-1), confirming the degradation problem is an optimization difficulty, not overfitting.
+        evidence: [C02, "Table 2", "Figure 4"]
+
       - id: N04
-        type: decision
+        type: experiment
         support_level: explicit
         source_refs: ["§3", "§3.1"]
-        title: Reformulate the target mapping as a residual function
-        choice: Replace plain stacked mappings with residual blocks that add a shortcut path to the learned residual branch.
-        alternatives:
-          - Keep the plain stack and rely on initialization plus normalization alone
-          - Increase depth further without shortcuts
-        evidence: Plain-depth degradation motivates changing the mapping rather than merely adding layers.
+        title: Propose residual reformulation F(x) = H(x) - x
+        result: The paper introduces shortcut connections so stacked layers learn residual functions F(x) rather than unreferenced mappings H(x).
+        evidence: [C01]
         children:
           - id: N05
             type: experiment
@@ -44,13 +41,16 @@ tree:
               - id: N06
                 type: decision
                 support_level: explicit
-                source_refs: ["§3.2", "Table 3"]
-                title: Use identity shortcuts by default
-                choice: Use identity shortcuts when dimensions match and adapt shortcuts only when dimensions increase.
+                source_refs: ["§4.1", "Table 3"]
+                framing_basis: >
+                  "So we do not use option C in the rest of this paper,
+                  to reduce memory/time complexity and model sizes."
+                title: Choose shortcut option B for deeper models
+                choice: Use projection shortcuts only when dimensions change, identity shortcuts elsewhere.
                 alternatives:
-                  - Projection on every shortcut
-                  - No shortcut path
-                evidence: Residual gains appear even before projecting every shortcut.
+                  - "Option A: identity with zero-padding"
+                  - "Option C: all projections"
+                evidence: Table 3 shows all three options outperform plain-34; differences among A/B/C are small.
                 children:
                   - id: N07
                     type: experiment
@@ -59,7 +59,7 @@ tree:
                     source_refs: ["Table 3", "Section 4.1"]
                     result: All three shortcut variants improve over plain-34; option B is slightly better than A and option C is only marginally better than B.
                     evidence: [C04, "Table 3", "Section 4.2"]
-          - id: N09
+          - id: N08
             type: experiment
             support_level: explicit
             title: Scale the residual family to 50, 101, and 152 layers
@@ -67,3 +67,11 @@ tree:
             source_refs: ["Table 3", "Section 4.1"]
             result: Residual models continue to improve top-1 and top-5 ImageNet error as depth increases.
             evidence: [C03, "Table 3"]
+
+      - id: N09
+        type: experiment
+        support_level: explicit
+        source_refs: ["§4.2", "Table 6"]
+        title: 1202-layer ResNet on CIFAR-10 shows no accuracy gain over 110-layer
+        result: The 1202-layer model achieves similar training error to the 110-layer model but has higher test error (7.93% vs 6.43%), suggesting overfitting on the small dataset.
+        evidence: ["Table 6"]

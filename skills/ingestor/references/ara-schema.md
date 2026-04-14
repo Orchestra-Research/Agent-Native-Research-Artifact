@@ -330,16 +330,27 @@ Rules:
 
 ## trace/exploration_tree.yaml
 
-Each node should distinguish direct source support from reconstruction:
+Every node must be source-grounded. Narrative node types require additional framing evidence.
 
 ```yaml
 tree:
   - id: N01
-    type: question
+    type: question                       # neutral type — no framing_basis needed
     support_level: explicit              # only valid value — inferred nodes are forbidden
     source_refs: ["Table 2", "§4.1"]   # required for every node
     title: "{...}"
     description: "{...}"
+
+  - id: N02
+    type: decision                       # narrative type — framing_basis required
+    support_level: explicit
+    source_refs: ["§4.1", "Table 3"]
+    framing_basis: >                     # direct quote proving the source uses this framing
+      "So we do not use option C in the rest of this paper,
+      to reduce memory/time complexity and model sizes."
+    title: "{...}"
+    choice: "{...}"
+    alternatives: ["{...}"]
 ```
 
 Rules:
@@ -347,6 +358,7 @@ Rules:
 - Every node must include `source_refs` pointing to specific tables, figures, or sections
 - If a research step cannot be grounded in explicit source material, omit the node entirely
 - Do not reconstruct, infer, or speculate about research steps not documented in the inputs
+- **Narrative types** (`dead_end`, `decision`, `pivot`) require a `framing_basis` field: a direct quote or specific citation proving the source material frames the content using that narrative structure. If `framing_basis` cannot be filled, the node must be downgraded to a neutral type (`experiment`, `question`)
 
 ---
 
