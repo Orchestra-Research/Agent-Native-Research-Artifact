@@ -1,7 +1,7 @@
-# Table 3 - Error rates on ImageNet validation (10-crop testing)
+# Table 3 - Error rates (%, 10-crop testing) on ImageNet validation
 
 **Source**: Table 3 in "Deep Residual Learning for Image Recognition"
-**Caption**: Error rates (%, 10-crop testing) on ImageNet validation. VGG-16 is based on our test. ResNet-50/101/152 are of option B that only uses projections for increasing dimensions.
+**Caption**: "Error rates (%, 10-crop testing) on ImageNet validation. VGG-16 is based on our test. ResNet-50/101/152 are of option B that only uses projections for increasing dimensions."
 **Extraction type**: raw_table
 
 | model | top-1 err. | top-5 err. |

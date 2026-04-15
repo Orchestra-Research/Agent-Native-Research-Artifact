@@ -1,27 +1,24 @@
 # Constraints
 
-## Boundary Conditions
+## Dimension Matching
+- Identity shortcuts require input and output dimensions to match. When dimensions change (at downsampling stages), either zero-padding (option A) or 1×1 projection (option B) is needed.
+- Downsampling is performed with stride-2 convolutions at conv3_1, conv4_1, conv5_1.
 
-1. **Dimension matching**: Identity shortcuts (y = F(x) + x) require input and output to have the same dimensions. When dimensions change between stages, either zero-padding or projection shortcuts must be used (§3.1, Eq.2).
+## Dataset Scale and Overfitting
+- The 1202-layer ResNet on CIFAR-10 achieves similar training error to the 110-layer model but has higher test error (7.93% vs 6.43%), suggesting overfitting on the small 50k-image dataset. The paper notes that no regularization (maxout, dropout) was applied, as the focus was on optimization difficulty rather than regularization.
+- The degradation problem is distinct from overfitting and is observed even on training error.
 
-2. **Depth range validated**: The paper validates residual learning from 18 to 152 layers on ImageNet and up to 1202 layers on CIFAR-10. The 1202-layer network shows no optimization difficulty but has marginally higher test error than the 110-layer model, possibly due to overfitting on the small dataset (§4.2).
+## Bottleneck Identity Shortcut Criticality
+- For bottleneck architectures, parameter-free identity shortcuts are particularly important. Replacing identity shortcuts with projections in bottleneck designs doubles time complexity and model size, as the shortcut connects two high-dimensional ends.
 
-3. **Dataset scale**: The ImageNet experiments use 1.28 million training images. CIFAR-10 uses 50k training images. The bottleneck design and depth scaling results are demonstrated on ImageNet.
+## Training Protocol Sensitivity
+- The 110-layer CIFAR-10 ResNet requires a modified learning rate schedule: starting at 0.01 (not 0.1) to warm up until training error is below 80%, then switching to 0.1 and proceeding as normal. The initial learning rate of 0.1 is too large for convergence of very deep networks.
 
-4. **Single-dataset evaluation per experiment**: Each experiment configuration is evaluated on one dataset (ImageNet or CIFAR-10), not transferred across datasets in this paper.
-
-## Assumptions
-
-1. **BN prerequisite**: All networks use Batch Normalization, which addresses vanishing/exploding gradients. The degradation problem is assumed to persist even with BN (§1).
-
-2. **No dropout**: The paper follows [16] and does not use dropout. Regularization comes from deep and thin architectures (§4.2).
-
-3. **Training from scratch**: All ImageNet models are trained from scratch (not fine-tuned from a shallower model), using weight initialization from [13] and BN (§3.4).
+## Solver Limitations
+- The paper conjectures that deep plain nets may have exponentially low convergence rates, impacting the optimization. Even with BN (which prevents vanishing/exploding gradients), the solver cannot find good solutions for deep plain networks.
+- The current SGD solver is still able to find good solutions for plain nets that are "not overly deep" (18 layers).
 
 ## Known Limitations
-
-1. **No theoretical guarantee**: The paper provides an empirical demonstration, not a proof, that residual learning solves degradation. The hypothesis that it is "easier to optimize the residual mapping than the original" is stated but not formally proven (§3.1).
-
-2. **Overfitting at extreme depth on small datasets**: The 1202-layer ResNet on CIFAR-10 shows slightly worse test error than the 110-layer model despite similar training error, suggesting overfitting with too many parameters on small datasets (§4.2).
-
-3. **Bottleneck necessity for deep models**: The basic two-layer block becomes impractical at 50+ layers due to computational cost. The switch to bottleneck blocks at depth 50 makes direct comparison with the 34-layer basic architecture less clean.
+- The paper does not explore whether the degradation problem is fully eliminated or merely pushed to greater depths. The 1202-layer CIFAR-10 experiment shows no optimization difficulty but encounters overfitting.
+- No analysis of residual learning on architectures beyond CNNs (though the paper speculates applicability to other domains).
+- The paper does not study the combination of residual learning with stronger regularization (dropout, maxout), leaving this for future work.

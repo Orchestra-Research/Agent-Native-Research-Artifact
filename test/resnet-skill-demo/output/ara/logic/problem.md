@@ -2,46 +2,47 @@
 
 ## Observations
 
-### O1: Deeper plain networks exhibit higher training error
-- **Statement**: A 34-layer plain network has higher training error than an 18-layer plain network throughout the training procedure, even though the 18-layer network's solution space is a subspace of the 34-layer network's (Table 2, Figure 4 left).
-- **Evidence**: Table 2 (plain-34: 28.54% top-1, plain-18: 27.94% top-1); Figure 4 left shows training curves
-- **Implication**: Adding depth to plain networks actively hinders optimization rather than helping
+### O1: Depth is critical for visual recognition
+- **Statement**: Recent evidence reveals that network depth is of crucial importance; leading results on ImageNet all exploit "very deep" models with depth of sixteen to thirty layers.
+- **Evidence**: §1; VGG-16 [41], GoogLeNet [44], PReLU-net [13] results on ImageNet
+- **Implication**: Deeper networks capture richer hierarchical features needed for complex recognition tasks.
 
-### O2: The degradation is not caused by overfitting
-- **Statement**: The deeper 34-layer plain model shows higher training error (not just test error), ruling out overfitting as the cause. These networks are trained with BN, which ensures forward-propagated signals have non-zero variances and backward gradients exhibit healthy norms (§4.1, Figure 4).
-- **Evidence**: Figure 4 left (thin curves = training error); §4.1 discussion of vanishing gradients
-- **Implication**: The degradation is an optimization difficulty, not a generalization problem
+### O2: Deeper plain networks exhibit degradation
+- **Statement**: With network depth increasing, accuracy gets saturated and then degrades rapidly. The 34-layer plain network has higher training error (28.54% top-1) than the 18-layer plain network (27.94% top-1) on ImageNet validation.
+- **Evidence**: Table 2, Figure 4 (left), §4.1
+- **Implication**: Adding more layers to a suitably deep model leads to higher training error — this is not caused by overfitting.
 
-### O3: A constructed solution exists that should not degrade
-- **Statement**: Given a shallower model, one can construct a deeper model by adding identity layers on top that copy the shallower model's learned features. This deeper model should produce no higher training error than the shallower one (§1, §3).
-- **Evidence**: §1 paragraph on construction argument; §3 opening discussion
-- **Implication**: Current solvers are unable to find solutions that are comparably good or better than the constructed solution
+### O3: Degradation is an optimization problem, not overfitting
+- **Statement**: The deeper 34-layer plain network has higher training error throughout the whole training procedure, even though the solution space of the 18-layer plain network is a subspace of the 34-layer one.
+- **Evidence**: Figure 4 (left), §4.1
+- **Implication**: The solver cannot find solutions at least as good as the shallower model, indicating optimization difficulty rather than capacity issues.
 
-### O4: Network depth is critical for visual recognition
-- **Statement**: Leading results on ImageNet (VGG-16/19, GoogLeNet) all use "very deep" models with 16–30 layers, and depth has been identified as crucial for performance (§1).
-- **Evidence**: §1 cites [41, 44, 13, 16]; Table 4 and Table 5 show SOTA results
-- **Implication**: The community needs a way to train much deeper networks without degradation
+### O4: Construction argument for identity mapping
+- **Statement**: There exists a solution by construction to the deeper model: the added layers are identity mapping, and the other layers are copied from the learned shallower model. The existence of this constructed solution indicates that a deeper model should produce no higher training error than its shallower counterpart.
+- **Evidence**: §1, §3
+- **Implication**: Current solvers are unable to find solutions that are comparably good or better than the constructed solution.
 
 ## Gaps
 
-### G1: Plain depth fails to translate to accuracy
-- **Statement**: Simply stacking more layers in a plain architecture leads to worse optimization and higher error
-- **Caused by**: O1, O2
+### G1: Deep networks cannot be trained effectively
+- **Statement**: Plain networks deeper than ~30 layers suffer from degradation — higher training error with more depth — despite having larger solution spaces.
+- **Caused by**: O2, O3
 - **Existing attempts**: Normalized initialization [23, 9, 37, 13], intermediate normalization layers (BN) [16]
-- **Why they fail**: BN enables convergence for networks with tens of layers, but the degradation problem persists at greater depths (§1)
+- **Why they fail**: These methods enable convergence for tens of layers but do not solve the degradation problem for very deep networks. The 34-layer plain net still degrades despite using BN.
 
-### G2: No mechanism to exploit the identity construction argument
-- **Statement**: The existence of a solution by construction (identity mapping on added layers) is not realizable by current solvers
-- **Caused by**: O3
-- **Existing attempts**: Standard SGD training of plain stacked layers
-- **Why they fail**: The solver cannot find the identity mapping through direct optimization of unreferenced layers (§3)
+### G2: No explicit mechanism to learn identity mappings
+- **Statement**: Standard stacked nonlinear layers have difficulty approximating identity mappings when the optimal function is close to identity.
+- **Caused by**: O3, O4
+- **Existing attempts**: Highway networks [42, 43] with gating mechanisms
+- **Why they fail**: Highway networks have not demonstrated accuracy gains with extremely increased depth (e.g., over 100 layers).
 
 ## Key Insight
-- **Insight**: Instead of learning the desired mapping H(x) directly, explicitly reformulate the layers as learning a residual function F(x) = H(x) - x, so the original mapping becomes F(x) + x. If the identity mapping is optimal, it is easier to push F(x) toward zero than to learn an identity through a stack of nonlinear layers.
-- **Derived from**: O3 (construction argument), G2 (solver inability)
-- **Enables**: Shortcut connections that perform identity mapping, adding neither parameters nor computational complexity, allowing networks to gain accuracy from substantially increased depth
+- **Insight**: Instead of hoping each stack of layers directly fits a desired underlying mapping H(x), explicitly let the layers fit a residual function F(x) = H(x) − x. The original function becomes F(x) + x. If identity mapping is optimal, it is easier to push F(x) toward zero than to fit an identity mapping with nonlinear layers.
+- **Derived from**: O3, O4
+- **Enables**: Training of extremely deep networks (100+ layers) via shortcut connections that perform identity mapping, adding neither extra parameters nor computational complexity.
 
 ## Assumptions
-- A1: The degradation problem is a fundamental optimization difficulty, not caused by vanishing/exploding gradients (which are addressed by BN)
-- A2: The residual function F(x) is easier to optimize toward zero than learning an identity through stacked nonlinear layers
-- A3: Identity shortcuts introduce neither extra parameters nor computational complexity when input and output dimensions match
+- A1: The degradation problem is caused by optimization difficulty, not by overfitting or vanishing/exploding gradients (the latter being addressed by BN).
+- A2: Residual functions are easier to optimize than unreferenced mappings when the optimal function is close to identity.
+- A3: Identity shortcuts (adding no parameters) are sufficient to address the degradation problem.
+- A4: The residual learning formulation is generic and applicable across different vision tasks and architectures.

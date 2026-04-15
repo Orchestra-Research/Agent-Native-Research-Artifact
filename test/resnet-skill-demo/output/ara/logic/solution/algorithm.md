@@ -2,87 +2,114 @@
 
 ## Mathematical Formulation
 
-### Residual Function (§3.1)
+### Residual Learning Formulation
 
-For a building block with input x:
+Let H(x) be the desired underlying mapping for a stack of layers. Instead of learning H(x) directly, the layers learn the residual function:
+
+$$F(x) = H(x) - x$$
+
+The output of the residual block is:
 
 $$y = F(x, \{W_i\}) + x$$
 
-Where F is the residual mapping to be learned.
+where F(x, {W_i}) represents the residual mapping learned by the stacked layers, and x is the identity shortcut.
 
-For a two-layer block:
+### With Projection Shortcut
 
-$$F = W_2 \cdot \sigma(W_1 \cdot x)$$
+When input and output dimensions differ (dimension increase at downsampling stages):
 
-where $\sigma$ denotes ReLU. Biases are omitted for simplicity.
+$$y = F(x, \{W_i\}) + W_s x$$
 
-When input and output dimensions differ, a linear projection is applied:
+where W_s is a linear projection (implemented as 1×1 convolution with stride 2) used only to match dimensions.
 
-$$y = F(x, \{W_i\}) + W_s \cdot x$$
+### Two-Layer Basic Block (ResNet-18/34)
 
-The operation F + x is performed by element-wise addition after a shortcut connection.
+$$y = W_2 \cdot \sigma(BN(W_1 \cdot x)) + x$$
 
-### Bottleneck Function (§4.1)
+where σ is ReLU, BN is batch normalization, and W_1, W_2 are 3×3 convolution weight matrices.
 
-For a three-layer bottleneck block with input x of dimension d:
+### Three-Layer Bottleneck Block (ResNet-50/101/152)
 
-$$F(x) = W_3 \cdot \sigma(W_2 \cdot \sigma(W_1 \cdot x))$$
+$$y = W_3 \cdot \sigma(BN(W_2 \cdot \sigma(BN(W_1 \cdot x)))) + x$$
 
-where W_1 is 1x1 (d -> d/4), W_2 is 3x3 (d/4 -> d/4), W_3 is 1x1 (d/4 -> d).
+where W_1 is 1×1 (reduce), W_2 is 3×3, W_3 is 1×1 (restore).
 
 ## Pseudocode
 
-```
-function ResidualBlock(x, W1, W2, shortcut_type):
-    # Residual branch
-    h = conv3x3(x, W1)
-    h = batch_norm(h)
-    h = relu(h)
-    h = conv3x3(h, W2)
-    h = batch_norm(h)
+```python
+def residual_block_basic(x, W1, W2, shortcut_proj=None):
+    """Basic 2-layer residual block (ResNet-18/34)."""
+    identity = x
 
-    # Shortcut branch
-    if shortcut_type == "identity":
-        s = x
-    elif shortcut_type == "projection":
-        s = conv1x1(x, Ws, stride=2)
-        s = batch_norm(s)
+    out = conv3x3(x, W1)
+    out = batch_norm(out)
+    out = relu(out)
 
-    # Merge
-    y = h + s
-    y = relu(y)
-    return y
+    out = conv3x3(out, W2)
+    out = batch_norm(out)
 
-function BottleneckBlock(x, W1, W2, W3, shortcut_type):
-    h = conv1x1(x, W1)      # reduce
-    h = batch_norm(h); h = relu(h)
-    h = conv3x3(h, W2)      # spatial
-    h = batch_norm(h); h = relu(h)
-    h = conv1x1(h, W3)      # restore
-    h = batch_norm(h)
+    if shortcut_proj is not None:
+        identity = conv1x1(x, shortcut_proj, stride=2)
+        identity = batch_norm(identity)
 
-    if shortcut_type == "identity":
-        s = x
-    elif shortcut_type == "projection":
-        s = conv1x1(x, Ws, stride=2)
-        s = batch_norm(s)
+    out = out + identity
+    out = relu(out)
+    return out
 
-    y = h + s
-    y = relu(y)
-    return y
+
+def residual_block_bottleneck(x, W1, W2, W3, shortcut_proj=None):
+    """3-layer bottleneck block (ResNet-50/101/152)."""
+    identity = x
+
+    out = conv1x1(x, W1)       # reduce dimensions
+    out = batch_norm(out)
+    out = relu(out)
+
+    out = conv3x3(out, W2)     # 3x3 convolution
+    out = batch_norm(out)
+    out = relu(out)
+
+    out = conv1x1(out, W3)     # restore dimensions
+    out = batch_norm(out)
+
+    if shortcut_proj is not None:
+        identity = conv1x1(x, shortcut_proj, stride=2)
+        identity = batch_norm(identity)
+
+    out = out + identity
+    out = relu(out)
+    return out
+
+
+def resnet(x, blocks_per_stage, block_type):
+    """Full ResNet forward pass."""
+    # Initial convolution
+    x = conv7x7(x, stride=2)
+    x = batch_norm(x)
+    x = relu(x)
+    x = max_pool(x, 3, stride=2)
+
+    # 4 stages with increasing channels [64, 128, 256, 512]
+    for stage in range(4):
+        for block in range(blocks_per_stage[stage]):
+            stride = 2 if (stage > 0 and block == 0) else 1
+            x = block_type(x, stride=stride)
+
+    # Classification head
+    x = global_avg_pool(x)
+    x = fully_connected(x, num_classes=1000)
+    return softmax(x)
 ```
 
 ## Complexity Analysis
 
-From Table 1 and §3.3:
+### Time Complexity
+- Basic block: 2 × (3×3 × C × C × H × W) = 18C²HW FLOPs
+- Bottleneck block: (1×1 × 4C × C + 3×3 × C × C + 1×1 × C × 4C) × H × W = (4C² + 9C² + 4C²)HW = 17C²HW FLOPs
+- The bottleneck block has similar per-block complexity to the basic block despite having 3 layers
 
-| Model | Layers | FLOPs | Parameters |
-|-------|--------|-------|------------|
-| VGG-19 | 19 | 19.6 billion | — |
-| Plain-34 | 34 | 3.6 billion | — |
-| ResNet-34 | 34 | 3.6 billion | — |
-| ResNet-50 | 50 | ~3.8 billion | — |
-| ResNet-101 | 101 | ~7.6 billion | — |
-| ResNet-152 | 152 | 11.3 billion | — |
-
-The 34-layer ResNet has only 18% of the FLOPs of VGG-19, while achieving better accuracy. ResNet-152 has lower complexity than VGG-16/19 in terms of FLOPs.
+### Space Complexity
+- Identity shortcuts add zero parameters
+- Projection shortcuts (option B) add W_s parameters only at dimension-change boundaries (3 projections in a typical ResNet)
+- ResNet-34: 3.6 billion FLOPs (18% of VGG-19)
+- ResNet-152: 11.3 billion FLOPs (still less than VGG-16/19's 15.3/19.6 billion FLOPs)

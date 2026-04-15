@@ -1,36 +1,36 @@
 # Heuristics
 
-## H01: Learning rate schedule with plateau-driven division
-- **Rationale**: Starting with lr=0.1 and dividing by 10 when the error plateaus allows the network to converge quickly initially and then fine-tune. Models are trained for up to 60x10^4 iterations on ImageNet (§3.4).
+## H01: BN after every convolution, before activation
+- **Rationale**: Batch normalization stabilizes training by normalizing activations, addressing vanishing/exploding gradients. Applied after each convolution and before ReLU activation in all ResNet variants.
 - **Sensitivity**: high
-- **Bounds**: lr starts at 0.1, divided by 10 at plateaus; for CIFAR-10 110-layer ResNet, lr starts at 0.1, reduced at 32k and 48k iterations with total 64k iterations
+- **Bounds**: Required for all convolution layers in the network. Without BN, deep networks fail to converge.
 - **Code ref**: [src/execution/residual_block.py]
-- **Source**: §3.4, §4.2
+- **Source**: §3.4 — "We adopt batch normalization (BN) right after each convolution and before activation, following [16]."
 
-## H02: BN after every convolution, before activation
-- **Rationale**: Batch Normalization is adopted right after each convolution and before activation, following [16]. This ensures forward-propagated signals have non-zero variances and backward gradients have healthy norms, addressing vanishing/exploding gradients (§3.4, §4.1).
+## H02: Learning rate warm-up for very deep networks
+- **Rationale**: For the 110-layer CIFAR-10 ResNet, the standard initial learning rate of 0.1 is too large to start converging. A warm-up phase with lr=0.01 is used until training error drops below 80%, then lr is set to 0.1 and the normal schedule resumes.
 - **Sensitivity**: high
-- **Bounds**: Applied to every convolutional layer in both the residual branch and projection shortcuts
+- **Bounds**: Needed when depth exceeds ~100 layers on small datasets. The 0.01 warm-up phase lasts approximately 400 iterations.
 - **Code ref**: [src/execution/residual_block.py]
-- **Source**: §3.4
+- **Source**: §4.2 — "we find that the initial learning rate of 0.1 is slightly too large to start converging. So we use 0.01 to warm up the training until the training error is below 80% (about 400 iterations), and then go back to 0.1"
 
-## H03: Weight initialization from He et al. [13]
-- **Rationale**: Weights are initialized as in [13], designed for ReLU networks to maintain variance across layers. Combined with BN, this allows training from scratch without pre-training (§3.4).
-- **Sensitivity**: medium
-- **Bounds**: Applied to all convolutional layers
-- **Code ref**: [src/execution/residual_block.py]
-- **Source**: §3.4
-
-## H04: No dropout
-- **Rationale**: Following the practice in [16], dropout is not used. The paper argues that deep and thin architectures impose regularization by design, without needing dropout (§3.4, §4.2).
+## H03: No dropout in residual networks
+- **Rationale**: The paper intentionally omits dropout, following the practice of [14] (BN paper), to focus on the optimization aspects of residual learning without confounding regularization effects. The architecture uses BN for normalization instead.
 - **Sensitivity**: low
-- **Bounds**: Not used in any configuration reported
+- **Bounds**: Applied across all ResNet experiments (ImageNet and CIFAR-10). The paper notes that combining with stronger regularization may improve results but leaves this for future work.
 - **Code ref**: [src/execution/residual_block.py]
-- **Source**: §3.4
+- **Source**: §3.4 — "We do not use dropout [14], following the practice in [16]."
 
-## H05: Warm-up learning rate for very deep CIFAR-10 models
-- **Rationale**: For the 110-layer ResNet on CIFAR-10, the initial lr of 0.1 is "too large to start converging." A warm-up of lr=0.01 is used until training error drops below 80% (about 400 iterations), then lr is set to 0.1 and the normal schedule resumes (§4.2).
-- **Sensitivity**: high
-- **Bounds**: Only needed for networks that fail to converge with lr=0.1 from the start; applies to CIFAR-10 110-layer model
+## H04: Stride-2 convolution for downsampling (no pooling between stages)
+- **Rationale**: Downsampling is performed by convolutions with stride 2 at the first layer of each stage (conv3_1, conv4_1, conv5_1), rather than using separate pooling layers. This reduces information loss and maintains the residual connection structure. Only max pooling is used after conv1.
+- **Sensitivity**: medium
+- **Bounds**: Applied at 3 stage boundaries in ImageNet architectures. Both the shortcut and the residual branch use stride 2 when feature maps are halved.
 - **Code ref**: [src/execution/residual_block.py]
-- **Source**: §4.2
+- **Source**: §3.3, Table 1 — "Downsampling is performed by conv3_1, conv4_1, and conv5_1 with a stride of 2."
+
+## H05: He initialization (weight initialization from [13])
+- **Rationale**: Weights are initialized according to the method in [13] (Delving Deep into Rectifiers), which accounts for the ReLU nonlinearity by scaling initialization variance by 2/n_in. This is important for enabling convergence of deep networks.
+- **Sensitivity**: medium
+- **Bounds**: Applied to all convolutional and fully-connected layers. Combined with BN, enables training from scratch without pre-training.
+- **Code ref**: [src/execution/residual_block.py]
+- **Source**: §3.4 — "We initialize the weights as in [13] and train all plain/residual nets from scratch."
