@@ -117,6 +117,13 @@ via the `children:` key. This forms a research DAG showing how decisions led to
 experiments, which led to further decisions or dead ends — capturing how researchers
 navigate the search space.
 
+**Note on `framing_basis`**: The ingestor skill requires a `framing_basis` field for
+narrative node types (`dead_end`, `decision`, `pivot`) because papers are product
+narratives that rarely describe the research process explicitly. The research-manager
+does NOT require `framing_basis` because it records live sessions where the user
+explicitly makes decisions and hits dead ends — the `provenance` tag already establishes
+that the framing comes from the user or from observed events, not from reconstruction.
+
 - Root nodes are top-level entries under `tree:`
 - Each node can have `children:` containing nested child nodes (indented)
 - Use `also_depends_on: [N{XX}]` for cross-edges when a node depends on multiple parents

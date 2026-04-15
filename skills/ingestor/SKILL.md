@@ -178,7 +178,8 @@ Run ARA Seal Level 1 validation. Perform these checks:
 - heuristics.md has H01+ blocks with Rationale, Sensitivity, Bounds fields
 - concepts.md has ≥5 concept sections
 - experiments.md has ≥3 experiment plans
-- exploration_tree.yaml parses as valid YAML with ≥8 nodes, has dead_end and decision types
+- exploration_tree.yaml parses as valid YAML with ≥8 nodes
+- Narrative types (dead_end, decision, pivot) have `framing_basis` with a source quote; if absent, downgrade to neutral type
 - Claim Proof references (E01, E02...) resolve to experiments.md
 - Experiment Verifies references (C01, C02...) resolve to claims.md
 - Heuristic Code ref paths resolve to actual files in src/execution/
