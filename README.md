@@ -1,7 +1,7 @@
 # Agent-Native Research Artifact (ARA)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-2%20skills-green)](skills/)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-3%20skills-green)](skills/)
 [![Paper](https://img.shields.io/badge/Paper-read%20now-orange)](https://orchestra-labs.com)
 
 > A protocol that recasts the primary research object from narrative document to **machine-executable knowledge package** — so AI agents can navigate, reproduce, and extend published research without re-discovering every dead end.
@@ -79,12 +79,13 @@ artifact/
 
 ## Skills
 
-This repository ships two open-source agent skills that work with ARA:
+This repository ships three open-source agent skills that work with ARA:
 
 | Skill | Description | Invoke |
 |-------|-------------|--------|
 | **[ingestor](skills/ingestor/)** | Converts papers, repos, notes, or any research input into a structured ARA artifact | `/ingestor <path>` |
 | **[research-manager](skills/research-manager/)** | Post-session research recorder with provenance tracking | `/research-manager` |
+| **[rigor-reviewer](skills/rigor-reviewer/)** | ARA Seal Level 2 semantic epistemic review — scores six dimensions of research rigor | `/rigor-reviewer <artifact_dir>` |
 
 ### Ingestor (ARA Compiler)
 
