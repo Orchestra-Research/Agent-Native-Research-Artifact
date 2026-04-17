@@ -70,14 +70,18 @@ Adapt to whatever you receive:
 1. READ all inputs
 2. REASON through the 4-stage epistemic protocol (see below)
 3. GENERATE all ARA files using Write tool
-4. VALIDATE by running Seal Level 1
-5. FIX any failures, re-validate
-6. REPORT summary to user
+4. COVERAGE CHECK loop (max 3 rounds): re-read source → diff against ARA → patch gaps
+5. VALIDATE by running Seal Level 1
+6. FIX any failures, re-validate
+7. REPORT summary to user
 ```
 
 ### Step 1: Read Inputs
 
-Read ALL provided inputs thoroughly before generating anything. For PDFs, read every page.
+Read ALL provided inputs thoroughly before generating anything. For PDFs, read every page,
+**including appendices** — appendices often carry reproduction-critical content and should
+be treated with the same priority as main-text pages.
+
 For repos, prioritize: README → core algorithm files → configs → environment files.
 
 ### Step 2: 4-Stage Epistemic Chain-of-Thought
@@ -110,11 +114,21 @@ Map extracted atoms to `/logic/`:
 - **solution/**: architecture (component graph), algorithm (math + pseudocode), constraints, heuristics
 - **related_work.md**: typed dependency graph (imports/extends/bounds/baseline/refutes)
 
+Appendix content (worked examples, prompt templates, enumerated taxonomies, annotation
+schemas, extended analyses, prescriptive content) should be routed into the ARA layers
+where it fits best, preserving the granularity the source uses. Never silently drop an
+appendix section.
+
 When writing claims:
 - Phrase the main `Statement` at the strongest level directly supported by the cited evidence
 - Put raw support in `Evidence basis`
 - Put any broader synthesis in `Interpretation`
 - If the evidence only shows validation metrics, do not upgrade the claim to training dynamics or optimization quality unless training-side evidence is also captured
+
+`related_work.md` should reflect the paper's full citation footprint, not only the
+closest predecessors. Works with a specific technical delta get full `RW` blocks; remaining
+citations from the paper's References list should still be captured (more briefly) so the
+intellectual neighborhood is preserved.
 
 **Stage 3 — Physical Stubbing**
 Generate `/src/`:
@@ -166,7 +180,20 @@ Evidence-generation rules:
 - If only a subset is included, the filename must say `derived_`, `subset_`, or equivalent, and the file must state what it was derived from
 - Do not merge rows from different source tables into one evidence file unless the file is explicitly labeled as a derived comparison
 
-### Step 4: Validate
+### Step 4: Coverage Check Loop (max 3 rounds)
+
+Before running Seal validation, verify that the ARA faithfully covers the source material.
+Repeat up to **3 rounds**; stop early if a round produces no patches.
+
+**Each round:** re-read the source, identify anything not yet captured or only shallowly
+captured in the ARA, patch those gaps, then note how many fixes were made. If zero, exit
+early. Pay particular attention to appendix content and to citations from the paper's
+References list, which are easy to miss on the first pass.
+
+The coverage loop does not replace validation — it ensures the ARA is semantically complete
+before structural checks run.
+
+### Step 5: Validate
 
 Run ARA Seal Level 1 validation. Perform these checks:
 - All mandatory dirs exist: `logic/`, `logic/solution/`, `src/`, `src/configs/`, `trace/`, `evidence/`
@@ -190,7 +217,7 @@ Run ARA Seal Level 1 validation. Perform these checks:
 - Trace nodes declare `support_level: explicit|inferred`
 - Trace nodes with `support_level: explicit` include source references
 
-### Step 5: Fix & Iterate
+### Step 6: Fix & Iterate
 
 For each validation failure:
 1. Read the failing file
@@ -199,7 +226,7 @@ For each validation failure:
 
 Typically converges in 2-3 rounds.
 
-### Step 6: Report
+### Step 7: Report
 
 Print a summary:
 - Artifact location

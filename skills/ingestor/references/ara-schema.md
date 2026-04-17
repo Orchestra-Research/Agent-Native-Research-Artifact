@@ -32,6 +32,11 @@ rubric/                             # (Only if rubric provided)
   requirements.md                   # Leaf-level rubric requirements mapped to ARA files
 ```
 
+Additional files or subdirectories may be created on demand when the source contains
+content that does not fit the standard layers (for example, appendix-sourced worked
+examples, prompt templates, or enumerated taxonomies). Place such content in the ARA
+layer where it best belongs.
+
 ## Progressive Disclosure (3 Levels)
 
 - **Level 1 — PAPER.md** (~200 tokens): Frontmatter + layer index. Agent reads ONLY this to decide relevance.
@@ -252,6 +257,11 @@ Each heuristic MUST have ALL fields:
 - **Adopted elements**: {what was kept}
 ```
 
+Works with a specific technical delta get full `RW` blocks as above. Additional citations
+from the paper that do not have a technical delta (background, historical, infrastructure,
+or inline-comparison references) should still be captured more briefly so the ARA preserves
+the paper's full citation footprint.
+
 ---
 
 ## src/configs/training.md
@@ -394,6 +404,17 @@ ALL quantitative figures (not diagrams). Extract data points:
 ```
 
 Mark approximate readings with "≈".
+
+---
+
+## Appendix-sourced content
+
+Appendix sections commonly carry worked examples, prompt templates, enumerated taxonomies,
+annotation schemas, extended analyses, and prescriptive content. Route each into the ARA
+layer where it best fits, preserving the granularity the source uses (for example, keep
+per-entry descriptive fields for taxonomies rather than collapsing to names + frequencies).
+The existing layer conventions above apply; create additional files only when no existing
+file is a natural home.
 
 ---
 

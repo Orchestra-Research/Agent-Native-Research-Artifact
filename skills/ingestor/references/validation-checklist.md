@@ -71,6 +71,8 @@ All must exist with >10 bytes:
 - Has `## RW\d+` blocks
 - Contains `**Type**`
 - Contains `**Delta**`
+- Coverage should extend beyond the closest predecessors to reflect the paper's full
+  citation footprint
 
 ### logic/concepts.md
 - Has `## ` sections (at least 5)
@@ -82,6 +84,11 @@ All must exist with >10 bytes:
 - `logic/experiments.md`: ≥3 experiment blocks (`## E\d+`)
 - `src/execution/`: ≥1 `.py` file
 - `evidence/tables/` or `evidence/figures/`: ≥1 `.md` file
+
+## 5b. Appendix Coverage
+
+When the source has appendices, every appendix section should be traceable to at least
+one ARA file, with the granularity of the source preserved.
 
 ## 6. Evidence Quality
 
@@ -95,6 +102,8 @@ For each file in `evidence/tables/*.md` and `evidence/figures/*.md`:
 ## 7. evidence/README.md
 
 - Must contain a Markdown table (file index)
+- Numbered tables and figures from the source (main text and appendices) should be
+  reflected in the index
 
 ## 8. Exploration Tree (YAML)
 
