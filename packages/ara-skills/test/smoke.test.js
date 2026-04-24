@@ -1,0 +1,55 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import { listSkills } from '../src/skills.js';
+import { SUPPORTED_AGENTS, getAgentById } from '../src/agents.js';
+import { install, uninstall, listInstalled } from '../src/installer.js';
+
+test('listSkills discovers the three ARA skills', () => {
+  const ids = listSkills().map((s) => s.id).sort();
+  assert.deepEqual(ids, ['ingestor', 'research-manager', 'rigor-reviewer']);
+});
+
+test('agent registry exposes expected ids', () => {
+  const ids = SUPPORTED_AGENTS.map((a) => a.id);
+  assert.ok(ids.includes('claude-code'));
+  assert.ok(ids.includes('cursor'));
+  assert.ok(ids.includes('generic'));
+  assert.equal(getAgentById('claude-code').id, 'claude-code');
+});
+
+test('install + uninstall cycle (local, tmp dir)', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ara-skills-'));
+  try {
+    const res = install({
+      agentId: 'claude-code',
+      skillIds: ['ingestor'],
+      local: true,
+      cwd: tmp,
+      force: true,
+      quiet: true,
+    });
+    assert.equal(res.results[0].status, 'installed');
+    const installed = path.join(tmp, '.claude/skills/ingestor/SKILL.md');
+    assert.ok(fs.existsSync(installed), 'SKILL.md should be copied');
+
+    const rows = listInstalled({ cwd: tmp });
+    const row = rows.find((r) => r.agent === 'claude-code' && r.scope === 'local');
+    assert.ok(row && row.skills.includes('ingestor'));
+
+    const rm = uninstall({
+      agentId: 'claude-code',
+      skillIds: ['ingestor'],
+      local: true,
+      cwd: tmp,
+      quiet: true,
+    });
+    assert.equal(rm.results[0].status, 'removed');
+    assert.ok(!fs.existsSync(installed));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

@@ -34,10 +34,6 @@ This was tolerable when every consumer was human. It is not when AI agents routi
 
 ARA organizes research into four interlocking layers:
 
-<p align="center">
-  <img src="docs/figures/fig_ara_directory_annotated.png" alt="ARA directory structure" width="85%"/>
-</p>
-
 ```
 artifact/
   PAPER.md                    # Root manifest + layer index (~200 tokens)
@@ -126,17 +122,33 @@ See [skills/research-manager/SKILL.md](skills/research-manager/SKILL.md) for the
 
 ## Install
 
-### Quick install (all agents)
+### Interactive (recommended)
 
 ```bash
-npx skills add Orchestra-Research/Agent-Native-Research-Artifact
+npx @orchestra-research/ara-skills
 ```
 
-### Install a specific skill
+Auto-detects Claude Code, Cursor, Gemini CLI, OpenCode, Codex, and Hermes, then prompts for skills, agents, and install scope (global vs. local).
+
+### Non-interactive
 
 ```bash
-npx skills add Orchestra-Research/Agent-Native-Research-Artifact --skill ingestor
+# All three skills, every detected agent, user-level
+npx @orchestra-research/ara-skills install --all
+
+# One skill, one agent
+npx @orchestra-research/ara-skills install --skill ingestor --agent claude-code
+
+# Into the current project (.claude/skills, .cursor/skills, …) instead of $HOME
+npx @orchestra-research/ara-skills install --all --local
+
+# List / update / remove
+npx @orchestra-research/ara-skills list
+npx @orchestra-research/ara-skills update
+npx @orchestra-research/ara-skills uninstall --skill rigor-reviewer
 ```
+
+Full CLI reference: [`packages/ara-skills/`](packages/ara-skills/).
 
 ### Manual install (Claude Code)
 

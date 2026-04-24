@@ -1,0 +1,57 @@
+{
+  "name": "@orchestra-research/ara-skills",
+  "version": "0.1.0",
+  "description": "Install Agent-Native Research Artifact (ARA) skills — ingestor, research-manager, rigor-reviewer — into Claude Code, Cursor, OpenCode, Gemini CLI, Codex, and more.",
+  "type": "module",
+  "bin": {
+    "ara-skills": "./bin/cli.js"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node bin/cli.js",
+    "prepack": "node scripts/bundle-skills.mjs",
+    "postpack": "node scripts/clean-bundle.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "skills",
+    "README.md"
+  ],
+  "keywords": [
+    "ara",
+    "agent-native-research-artifact",
+    "research",
+    "skills",
+    "claude-code",
+    "cursor",
+    "gemini",
+    "opencode",
+    "codex",
+    "ingestor",
+    "research-manager",
+    "rigor-reviewer",
+    "llm",
+    "cli"
+  ],
+  "author": "Orchestra Research",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Orchestra-Research/Agent-Native-Research-Artifact-Init.git",
+    "directory": "packages/ara-skills"
+  },
+  "homepage": "https://github.com/Orchestra-Research/Agent-Native-Research-Artifact-Init#readme",
+  "bugs": {
+    "url": "https://github.com/Orchestra-Research/Agent-Native-Research-Artifact-Init/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "chalk": "^5.3.0"
+  }
+}

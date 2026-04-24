@@ -1,0 +1,4 @@
+node_modules/
+skills/
+*.tgz
+package-lock.json
