@@ -1,0 +1,59 @@
+name: Publish ara-skills to npm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/ara-skills/package.json'
+      - 'skills/**'
+      - '.github/workflows/publish-ara-skills.yml'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/ara-skills
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install
+        run: npm install --no-package-lock
+
+      - name: Test
+        run: npm test
+
+      - name: Check if version already published
+        id: check
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @orchestra-research/ara-skills version 2>/dev/null || echo "0.0.0")
+          echo "local=$LOCAL"  >> "$GITHUB_OUTPUT"
+          echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
+          if [ "$LOCAL" = "$PUBLISHED" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        if: steps.check.outputs.skip == 'false'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Tag release
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          git tag "ara-skills-v${{ steps.check.outputs.local }}"
+          git push origin "ara-skills-v${{ steps.check.outputs.local }}"
+        working-directory: ${{ github.workspace }}
