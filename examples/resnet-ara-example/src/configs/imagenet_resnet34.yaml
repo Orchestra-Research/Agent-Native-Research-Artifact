@@ -1,42 +1,47 @@
-dataset:
-  name: imagenet-2012
-  classes: 1000
-  train_images: 1280000
-  val_images: 50000
-
+# Concrete config for ResNet-34 (option A) on ImageNet 2012.
+# Source: §3.3, §3.4, Table 1, Table 2 of the paper.
 model:
-  family: resnet
-  variant: resnet-34
-  shortcut_policy:
-    same_dimensions: identity
-    increased_dimensions:
-      option_a: zero_padding
-      option_b: projection_1x1
+  name: resnet34
+  block: basic            # two 3x3 convs per residual block
+  shortcut_option: A      # identity + zero-padding for dim changes (parameter-free)
+  stem:
+    conv: {kernel: 7, stride: 2, out_channels: 64}
+    pool: {kernel: 3, stride: 2, type: max}
+  stages:                 # block counts and base widths per stage
+    - {name: conv2_x, blocks: 3, width: 64,  downsample: false}
+    - {name: conv3_x, blocks: 4, width: 128, downsample: true}
+    - {name: conv4_x, blocks: 6, width: 256, downsample: true}
+    - {name: conv5_x, blocks: 3, width: 512, downsample: true}
+  head: {pool: global_avg, fc: 1000, softmax: true}
+  flops: 3.6e9            # Table 1
+  params_match_plain34: true
 
-training:
-  optimizer: sgd
+train:
+  dataset: imagenet2012
+  augmentation:
+    short_side_range: [256, 480]
+    crop: 224
+    horizontal_flip: true
+    color_aug: krizhevsky_2012
+    pixel_mean_subtraction: true
+  optimizer:
+    type: sgd
+    momentum: 0.9
+    weight_decay: 1.0e-4
   batch_size: 256
-  learning_rate:
+  init: msra              # He et al. 2015, ref [13]
+  lr_schedule:
     initial: 0.1
-    schedule: divide by 10 when error plateaus
-  max_iterations: 600000
-  momentum: 0.9
-  weight_decay: 0.0001
-  dropout: false
+    rule: divide_by_10_on_plateau
+  max_iter: 600000        # "up to 60 x 10^4"
+  bn:
+    placement: after_conv_before_relu
+    momentum: not_specified_in_paper
+  dropout: 0.0            # not used
 
-augmentation:
-  resize_shorter_side: [256, 480]
-  random_crop: [224, 224]
-  horizontal_flip: true
-  mean_subtraction: per_pixel
-  color_augmentation: standard
-
-evaluation:
-  validation_metric:
-    - top1_error
-    - top5_error
-  comparison_testing: 10_crop
-  best_results_testing:
-    fully_convolutional: true
-    multi_scale_shorter_side: [224, 256, 384, 480, 640]
-
+eval:
+  protocol: 10_crop       # for Tables 2 and 3
+  alt_protocol_table4: fully_convolutional_multi_scale
+  fully_conv_scales: [224, 256, 384, 480, 640]
+  reported_top1: 25.03    # Table 2 (10-crop, validation)
+  reported_top5: 7.76     # Table 3 row "ResNet-34 A" (10-crop, validation)

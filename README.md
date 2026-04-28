@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-3%20skills-green)](skills/)
-[![Paper](https://img.shields.io/badge/Paper-read%20now-orange)](https://orchestra-labs.com)
+[![arXiv](https://img.shields.io/badge/arXiv-2604.24658-b31b1b.svg)](https://arxiv.org/abs/2604.24658)
 
 > A protocol that recasts the primary research object from narrative document to **machine-executable knowledge package** — so AI agents can navigate, reproduce, and extend published research without re-discovering every dead end.
 
@@ -79,11 +79,11 @@ This repository ships three open-source agent skills that work with ARA:
 
 | Skill | Description | Invoke |
 |-------|-------------|--------|
-| **[compiler](skills/compiler/)** | Converts papers, repos, notes, or any research input into a structured ARA artifact | `/compiler <path>` |
-| **[research-manager](skills/research-manager/)** | Post-session research recorder with provenance tracking | `/research-manager` |
-| **[rigor-reviewer](skills/rigor-reviewer/)** | ARA Seal Level 2 semantic epistemic review — scores six dimensions of research rigor | `/rigor-reviewer <artifact_dir>` |
+| **[compiler](skills/compiler/)** | Compiles papers, repos, notes, or any research input into a structured ARA artifact | `/compiler <path>` |
+| **[research-manager](skills/research-manager/)** | End-of-turn recorder that captures decisions, experiments, and dead ends with provenance tags | `/research-manager` |
+| **[rigor-reviewer](skills/rigor-reviewer/)** | ARA Seal Level 2 semantic review — scores six dimensions of epistemic rigor | `/rigor-reviewer <artifact_dir>` |
 
-### ARA Compiler
+### Compiler
 
 <p align="center">
   <img src="docs/figures/fig_compiler_v2.png" alt="ARA Compiler" width="90%"/>
@@ -107,10 +107,10 @@ See [skills/compiler/SKILL.md](skills/compiler/SKILL.md) for the full specificat
 ### Research Manager (Live Capture)
 
 <p align="center">
-  <img src="docs/figures/fig_lrm_lifecycle_v5_attempt2.png" alt="Live Research Manager lifecycle" width="90%"/>
+  <img src="docs/figures/fig_lrm_lifecycle_v5_attempt2.png" alt="Research Manager lifecycle" width="90%"/>
 </p>
 
-A post-session research recorder that extracts decisions, experiments, dead ends, claims, and heuristics from your coding session and writes them to an ARA artifact — capturing research knowledge as a natural side-effect of ordinary development.
+An end-of-turn recorder that runs after every turn and writes research-significant events into the `ara/` artifact via a three-stage pipeline (Context Harvester → Event Router → Maturity Tracker). Trace events (decisions, experiments, dead ends, pivots) are recorded immediately; knowledge events (claims, heuristics, concepts, constraints) are staged and crystallize only on closure signals — so research knowledge accrues as a side-effect of ordinary development.
 
 ```
 /research-manager
@@ -118,11 +118,19 @@ A post-session research recorder that extracts decisions, experiments, dead ends
 
 See [skills/research-manager/SKILL.md](skills/research-manager/SKILL.md) for the full specification.
 
+### Rigor Reviewer (ARA Seal Level 2)
+
+A semantic epistemic review that assumes Level 1 structural validation has passed, then scores six dimensions — evidence relevance, falsifiability, scope calibration, and more — producing a `level2_report.json` with severity-ranked findings and an overall recommendation.
+
+```
+/rigor-reviewer path/to/artifact/
+```
+
+See [skills/rigor-reviewer/SKILL.md](skills/rigor-reviewer/SKILL.md) for the full specification.
+
 ---
 
 ## Install
-
-### Interactive (recommended)
 
 ```bash
 npx @orchestra-research/ara-skills
@@ -169,7 +177,7 @@ cp -r skills/compiler ~/.claude/skills/compiler
 
 | Artifact | Source | Description |
 |----------|--------|-------------|
-| [ResNet ARA](examples/resnet-ara-example/) | Paper + code | Deep residual network — canonical CV paper |
+| [ResNet ARA](examples/resnet-ara-example/) | Paper + code | Deep residual networks — canonical CV paper |
 | [Scientific Reasoning ARA](ara-output/sci-reasoning/) | Paper | LLM research ideation patterns |
 | [ANDES QoE ARA](ara-output/andes-qoe/) | Paper | LLM inference quality-of-experience |
 
@@ -188,19 +196,19 @@ These skills follow the [Agent Skills open standard](https://agentskills.io/spec
 - Any agent supporting the Agent Skills specification
 
 ---
- 
- 
 
 ## Citation
 
 If you use ARA in your research, please cite:
 
 ```bibtex
-@article{ara2025,
-  title   = {Agent-Native Research Artifact},
-  author  = {Orchestra Research},
-  year    = {2025},
-  url     = {https://github.com/Orchestra-Research/Agent-Native-Research-Artifact}
+@article{ara2026,
+  title        = {Agent-Native Research Artifact},
+  author       = {Orchestra Research},
+  year         = {2026},
+  eprint       = {2604.24658},
+  archivePrefix= {arXiv},
+  url          = {https://arxiv.org/abs/2604.24658}
 }
 ```
 

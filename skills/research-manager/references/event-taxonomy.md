@@ -1,83 +1,103 @@
 # Event Taxonomy & Routing Rules
 
-## Event Classification
+Canonical reference for **Stage 2 (Event Router)** of the Live PM pipeline. Loaded on
+demand at epilogue time. SKILL.md owns the pipeline orchestration, closure signals,
+crystallization procedure, contradiction trigger, and schemas — this file does not
+duplicate those.
 
-When you observe activity in the coding session, classify it into one of these event types.
-Use the **signals** column to identify events from conversation and code context.
+This document covers two axes:
 
-### Research Events (Route to `trace/exploration_tree.yaml`)
+| Axis | Question | Outcome |
+|------|----------|---------|
+| **Kind** | What kind of event is this? | Picks the schema and target layer. |
+| **Routing** | Is this a journey fact or interpretation? | Picks **direct** vs **staged**. |
 
-| Type | Signals | Example |
-|------|---------|---------|
-| **question** | User asks "what if...", "should we...", "how does..." about research direction | "Should we use attention or convolution for the encoder?" |
-| **decision** | User chooses between alternatives, commits to a direction | "Let's go with GQA instead of MHA — lower memory footprint" |
-| **experiment** | Code runs a test/benchmark, user reports results | "The learning rate sweep shows 3e-4 is optimal" |
-| **dead_end** | Approach abandoned, hypothesis falsified, "this doesn't work" | "Tried FP16 but the loss diverges after 1k steps" |
-| **pivot** | Major direction change triggered by evidence | "The attention approach is too slow — switching to state space models" |
+A journey fact records *what occurred* (a choice, a run, an abandonment). It is immutable
+and goes direct. An interpretive claim records *what something means or what is generally
+true*. It is revisable, goes staged, and only crystallizes on a closure signal.
 
-### Knowledge Events (Route to `logic/`)
+## Direct-Routed Events (Journey Layer)
 
-| Type | Signals | Routes To |
-|------|---------|-----------|
-| **claim** | "I believe...", "The system achieves...", assertion about capability/property | `logic/claims.md` |
-| **heuristic** | "The trick is...", "You need to...", implementation insight | `logic/solution/heuristics.md` |
-| **concept** | New term defined, disambiguation needed | `logic/concepts.md` |
-| **constraint** | "This only works when...", boundary condition | `logic/solution/constraints.md` |
-| **architecture** | System design, component relationships | `logic/solution/architecture.md` |
+Write to `trace/exploration_tree.yaml` immediately at end of turn.
 
-### Evidence Events (Route to `evidence/`)
+| Type | Signals | Required payload |
+|------|---------|------------------|
+| `question` | "What if...", "Should we...", "How does...", a research direction opened | `description` |
+| `decision` | User chose between alternatives, committed to a direction | `choice`, `alternatives`, `evidence` |
+| `experiment` | Code ran a test/benchmark, results produced | `result`, `evidence` |
+| `dead_end` | Approach abandoned, hypothesis falsified, "doesn't work", reverted | `hypothesis`, `failure_mode`, `lesson` |
+| `pivot` | Major direction change triggered by evidence | `from`, `to`, `trigger` |
 
-| Type | Signals | Routes To |
-|------|---------|-----------|
-| **result_table** | Tabular data, benchmark numbers, comparison matrix | `evidence/tables/table{N}.md` |
-| **result_figure** | Plot data, visualization, chart values | `evidence/figures/fig{N}.md` |
-| **metric** | Single quantitative measurement | Inline in experiment node or evidence file |
+A `decision` node MAY reference a staged observation as evidence — this counts as
+**artifact-commitment** for that observation (closure signal; see SKILL.md Stage 3).
 
-### Process Events (Route to `trace/sessions/`)
+`ai-action` events (AI wrote code, ran a command) go to the session record's `ai_actions`
+list, **not** to the exploration tree.
 
-| Type | Signals | Routes To |
-|------|---------|-----------|
-| **ai-action** | Agent wrote code, ran command, created file | Session record |
-| **ai-suggestion** | Agent proposed direction, hypothesis, approach | Session record (ai_suggestions_pending) |
-| **user-direction** | User gives high-level instruction or corrects | Session record (events_logged with provenance: user) |
+## Staged-Routed Events (Interpretive — Buffered for Maturity)
 
-### Staging Events (Route to `staging/`)
+Write to `staging/observations.yaml` first, with `potential_type` indicating where they
+would crystallize. They do **not** enter `logic/` until a closure signal fires (see
+SKILL.md Stage 3).
 
-| Type | Signals | Routes To |
-|------|---------|-----------|
-| **observation** | Doesn't clearly fit above categories; interesting but unstructured | `staging/observations.yaml` |
+| Candidate Event | Signals | Crystallizes To | `potential_type` |
+|-----------------|---------|-----------------|------------------|
+| `claim` | "I believe...", "The system achieves...", falsifiable assertion about capability/property | `logic/claims.md` | `claim` |
+| `heuristic` | "The trick is...", "You need to...", implementation rule with rationale | `logic/solution/heuristics.md` | `heuristic` |
+| `concept` | New term defined, disambiguation needed | `logic/concepts.md` | `concept` |
+| `constraint` | "This only works when...", boundary condition | `logic/solution/constraints.md` | `constraint` |
+| `architecture` | System design statement, component relationship | `logic/solution/architecture.md` | `architecture` |
+| (unclassified) | Interesting but not yet typed | (stays staged) | `unknown` |
+
+Evidence artifacts (tables, figures, metrics) referenced by a direct-routed `experiment`
+get written to `evidence/` immediately — they are raw data, not interpretation.
 
 ## Routing Decision Tree
 
 ```
-Is it about a choice between alternatives?
-  → YES: decision (trace)
-  → NO: ↓
+What KIND of event is this?
 
-Is it a quantitative result or experimental outcome?
-  → YES: experiment (trace) + evidence data (evidence/)
-  → NO: ↓
+  Journey fact (something that happened)?
+    Was a choice made between alternatives?
+      → decision  [DIRECT to trace/]
+    Did code/test produce a result?
+      → experiment  [DIRECT to trace/, plus evidence/ for artifacts]
+    Was an approach abandoned with a reason?
+      → dead_end  [DIRECT to trace/]
+    Was there a major direction change?
+      → pivot  [DIRECT to trace/]
+    Was a research question opened?
+      → question  [DIRECT to trace/]
+    Did the AI perform an action (write code, run command)?
+      → ai-action  [session record only]
 
-Is it an abandoned approach with a reason?
-  → YES: dead_end (trace)
-  → NO: ↓
-
-Is it a falsifiable assertion about the system/method?
-  → YES: claim (logic/claims.md)
-  → NO: ↓
-
-Is it an implementation trick with rationale?
-  → YES: heuristic (logic/solution/heuristics.md)
-  → NO: ↓
-
-Is it a major direction change?
-  → YES: pivot (trace)
-  → NO: ↓
-
-Is it a research question being explored?
-  → YES: question (trace)
-  → NO: → observation (staging)
+  Interpretation (something asserted to be true / general)?
+    Falsifiable assertion about the system?
+      → STAGE as potential_type: claim
+    Implementation rule with rationale?
+      → STAGE as potential_type: heuristic
+    Term definition?
+      → STAGE as potential_type: concept
+    Boundary condition?
+      → STAGE as potential_type: constraint
+    System-design statement?
+      → STAGE as potential_type: architecture
+    Doesn't fit?
+      → STAGE as potential_type: unknown
 ```
+
+## Skip Filter (no record)
+
+Do not write any record for these:
+- Routine file reads with no downstream decision
+- Typo fixes, formatting changes, lint passes
+- Git status checks, dependency installs, environment setup
+- Greetings, acknowledgments, "thanks"
+- Clarifying questions whose answer added no new content
+- Pure restatement of the user's request
+
+If a turn contains only skip-filter activity, print
+`[PM] Turn skipped: no research events.` (or stay silent) and exit the epilogue.
 
 ## Provenance Assignment
 
@@ -95,29 +115,46 @@ AI performed an action (wrote code, ran test, made edit)
 
 User modified an AI suggestion ("no, actually..." / "more like...")
   → provenance: user-revised
+
+Uncertain?
+  → provenance: ai-suggested  (conservative default)
 ```
+
+`ai-suggested` never auto-upgrades. A subsequent **verbal-affirmation** closure signal
+upgrades it to `user-revised` (or `user` if the affirmation reproduces the assertion
+verbatim). The other three closure signals license crystallization but do **not** change
+provenance.
+
+### Trust calibration
+
+The provenance distribution of an artifact is itself a quality signal: a project full of
+`ai-suggested` claims is less trustworthy than one full of `user` / `user-revised` claims.
+Reviewers and downstream tools (e.g., rigor-reviewer L2) inspect this distribution.
 
 ## ID Conventions
 
 | Type | Prefix | Example | Scope |
 |------|--------|---------|-------|
-| Exploration node | N | N01, N02 | Global (across all sessions) |
-| Claim | C | C01, C02 | Global |
-| Heuristic | H | H01, H02 | Global |
+| Exploration node | N | N01, N02 | Global (across all turns and sessions) |
+| Claim | C | C01, C02 | Global; assigned at crystallization, not at staging |
+| Heuristic | H | H01, H02 | Global; assigned at crystallization |
 | Experiment plan | E | E01, E02 | Global |
-| Observation | O | O01, O02 | Global |
-| Session | date_seq | 2026-03-11_001 | Unique by date |
+| Observation | O | O01, O02 | Global; assigned at staging |
+| Session | date_seq | 2026-04-27_001 | Unique per calendar day |
 
-**Auto-increment**: Always read the existing file to find the highest ID before creating a new one.
+Always read the target file to find the highest existing ID before assigning a new one.
 
 ## Forensic Binding Checklist
 
-When logging any event, establish these bindings immediately:
+Establish at write time. If a binding is not yet possible, write `[pending]` and leave a
+TODO comment so a future epilogue can complete it.
 
-- [ ] **Claim → Proof**: If a claim is created, what evidence would prove/disprove it? Set `Proof: [pending]` if no evidence yet.
-- [ ] **Experiment → Claim**: Which claims does this experiment test? Link via `Claims tested:`.
-- [ ] **Heuristic → Code**: Where in the codebase is this implemented? Set `Code ref:`.
-- [ ] **Decision → Evidence**: What evidence or reasoning drove this decision?
-- [ ] **Dead End → Lesson**: What was learned? Could this knowledge prevent future mistakes?
-
-If a binding can't be established now, add a `<!-- TODO: bind to {target} -->` comment as a trackable obligation.
+- **Claim → Proof**: at crystallization, what evidence supports/refutes it?
+- **Experiment → Claim**: which staged or crystallized claim does this experiment test?
+  This binding is what enables the **empirical-resolution** closure signal.
+- **Heuristic → Code**: where in the codebase is this implemented?
+- **Decision → Evidence**: which exploration nodes or evidence artifacts motivated it?
+- **Dead End → Lesson**: what was learned that prevents repeating the mistake?
+- **Observation → Bound nodes**: at staging time, list `bound_to: [N{XX}, ...]` for any
+  exploration nodes the observation depends on. Without this list, empirical-resolution
+  cannot be detected automatically.

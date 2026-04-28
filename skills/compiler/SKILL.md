@@ -7,7 +7,7 @@ description: |
   package with cognitive layer (claims, concepts, heuristics), physical layer (configs, code
   stubs), exploration graph (research DAG), and grounded evidence.
 
-  TRIGGERS: ingest, create ARA, generate artifact, convert paper, build artifact, ingest paper,
+  TRIGGERS: compile, create ARA, generate artifact, convert paper, build artifact, compile paper,
   ARA from PDF, ARA from repo, ARA from code, structure research, extract knowledge
 argument-hint: "[any input — paths, URLs, descriptions, or nothing]"
 allowed-tools: Read, Write, Edit, Bash(python *|git clone *|ls *|mkdir *), Glob, Grep, Task
@@ -15,7 +15,7 @@ metadata:
   author: Orchestra-Research
   category: research-tooling
   version: "1.0.0"
-  tags: [research, ingestion, artifacts, knowledge-extraction]
+  tags: [research, compilation, artifacts, knowledge-extraction]
 ---
 
 # Universal ARA Compiler

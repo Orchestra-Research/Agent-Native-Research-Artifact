@@ -1,18 +1,10 @@
-# Table 2 - ImageNet Validation, Plain vs. Residual
+# Table 2: Top-1 ImageNet validation error — plain vs. ResNet at 18 / 34 layers
 
-**Source**: Table 2 and the surrounding discussion in *Deep Residual Learning for Image Recognition*.
-**Caption**: Top-1 error (%, 10-crop testing) on ImageNet validation.
+**Source**: Table 2, §4.1
+**Caption**: "Top-1 error (%, 10-crop testing) on ImageNet validation. Here the ResNets have no extra parameter compared to their plain counterparts. Fig. 4 shows the training procedures."
 **Extraction type**: raw_table
 
-| Model family | Depth | Top-1 error (%) |
-| --- | ---: | ---: |
-| Plain | 18 | 27.94 |
-| Plain | 34 | 28.54 |
-| ResNet | 18 | 27.88 |
-| ResNet | 34 | 25.03 |
-
-## Derived observations
-
-- The deeper plain model is worse than the shallower plain model.
-- The deeper residual model is better than the shallower residual model.
-- The 34-layer residual model improves by 3.51 points over the 34-layer plain model.
+|            | plain | ResNet |
+|------------|-------|--------|
+| 18 layers  | 27.94 | 27.88  |
+| 34 layers  | 28.54 | **25.03** |
