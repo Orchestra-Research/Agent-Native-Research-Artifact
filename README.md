@@ -79,11 +79,11 @@ This repository ships three open-source agent skills that work with ARA:
 
 | Skill | Description | Invoke |
 |-------|-------------|--------|
-| **[ingestor](skills/ingestor/)** | Converts papers, repos, notes, or any research input into a structured ARA artifact | `/ingestor <path>` |
+| **[compiler](skills/compiler/)** | Converts papers, repos, notes, or any research input into a structured ARA artifact | `/compiler <path>` |
 | **[research-manager](skills/research-manager/)** | Post-session research recorder with provenance tracking | `/research-manager` |
 | **[rigor-reviewer](skills/rigor-reviewer/)** | ARA Seal Level 2 semantic epistemic review — scores six dimensions of research rigor | `/rigor-reviewer <artifact_dir>` |
 
-### Ingestor (ARA Compiler)
+### ARA Compiler
 
 <p align="center">
   <img src="docs/figures/fig_compiler_v2.png" alt="ARA Compiler" width="90%"/>
@@ -97,12 +97,12 @@ Converts ANY research input into a complete ARA artifact. Accepts PDFs, GitHub r
 4. **Exploration Graph Extraction** — reconstruct the research DAG
 
 ```
-/ingestor path/to/paper.pdf
-/ingestor https://github.com/org/repo
-/ingestor path/to/paper.pdf path/to/code/ --output ./my-artifact/
+/compiler path/to/paper.pdf
+/compiler https://github.com/org/repo
+/compiler path/to/paper.pdf path/to/code/ --output ./my-artifact/
 ```
 
-See [skills/ingestor/SKILL.md](skills/ingestor/SKILL.md) for the full specification.
+See [skills/compiler/SKILL.md](skills/compiler/SKILL.md) for the full specification.
 
 ### Research Manager (Live Capture)
 
@@ -137,7 +137,7 @@ Auto-detects Claude Code, Cursor, Gemini CLI, OpenCode, Codex, and Hermes, then 
 npx @orchestra-research/ara-skills install --all
 
 # One skill, one agent
-npx @orchestra-research/ara-skills install --skill ingestor --agent claude-code
+npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
 
 # Into the current project (.claude/skills, .cursor/skills, …) instead of $HOME
 npx @orchestra-research/ara-skills install --all --local
@@ -160,7 +160,7 @@ cp -r skills/* .claude/skills/
 cp -r skills/* ~/.claude/skills/
 
 # Single skill
-cp -r skills/ingestor ~/.claude/skills/ingestor
+cp -r skills/compiler ~/.claude/skills/compiler
 ```
 
 ---

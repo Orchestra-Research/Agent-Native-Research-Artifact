@@ -17,7 +17,7 @@ ${chalk.bold('Usage:')}
 
 ${chalk.bold('Install options:')}
   --all                         Install every skill (default if no --skill given)
-  --skill <id>                  Install one skill (repeatable). Ids: ingestor, research-manager, rigor-reviewer
+  --skill <id>                  Install one skill (repeatable). Ids: compiler, research-manager, rigor-reviewer
   --agent <id>                  Target one agent (repeatable). Default: auto-detect, else claude-code
   --local                       Install into ./<agent>/skills instead of $HOME
   --force                       Overwrite existing installations
@@ -25,7 +25,7 @@ ${chalk.bold('Install options:')}
 
 ${chalk.bold('Examples:')}
   npx @orchestra-research/ara-skills install --all
-  npx @orchestra-research/ara-skills install --skill ingestor --agent claude-code
+  npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
   npx @orchestra-research/ara-skills install --all --local
   npx @orchestra-research/ara-skills uninstall --skill rigor-reviewer --agent cursor
 `;

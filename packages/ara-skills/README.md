@@ -4,7 +4,7 @@ One-command installer for the three **Agent-Native Research Artifact (ARA)** ski
 
 | Skill | Invoke | What it does |
 |-------|--------|--------------|
-| `ingestor`         | `/ingestor <input>`        | Convert a paper, repo, or notes into a complete ARA artifact |
+| `compiler`         | `/compiler <input>`        | Convert a paper, repo, or notes into a complete ARA artifact |
 | `research-manager` | `/research-manager`        | Post-session recorder that captures decisions, dead ends, and claims |
 | `rigor-reviewer`   | `/rigor-reviewer <dir>`    | ARA Seal Level 2 semantic epistemic review across six dimensions |
 
@@ -17,8 +17,8 @@ npx @orchestra-research/ara-skills
 # install everything to every detected agent (global / user-level)
 npx @orchestra-research/ara-skills install --all
 
-# install just the ingestor to Claude Code
-npx @orchestra-research/ara-skills install --skill ingestor --agent claude-code
+# install just the compiler to Claude Code
+npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
 
 # install into the current project instead of $HOME
 npx @orchestra-research/ara-skills install --all --local
@@ -57,7 +57,7 @@ After install, each skill lives at `<target>/<skill-id>/SKILL.md`. A small `.ara
 ```bash
 cd packages/ara-skills
 npm install
-node bin/cli.js install --skill ingestor --local --force
+node bin/cli.js install --skill compiler --local --force
 ```
 
 In dev mode the CLI reads skills from the sibling `../../skills/` directory. On `npm pack` / `npm publish`, `prepack` copies that directory into `packages/ara-skills/skills/` so the tarball is self-contained; `postpack` removes the copy afterward.

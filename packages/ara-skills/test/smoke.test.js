@@ -10,7 +10,7 @@ import { install, uninstall, listInstalled } from '../src/installer.js';
 
 test('listSkills discovers the three ARA skills', () => {
   const ids = listSkills().map((s) => s.id).sort();
-  assert.deepEqual(ids, ['ingestor', 'research-manager', 'rigor-reviewer']);
+  assert.deepEqual(ids, ['compiler', 'research-manager', 'rigor-reviewer']);
 });
 
 test('agent registry exposes expected ids', () => {
@@ -26,23 +26,23 @@ test('install + uninstall cycle (local, tmp dir)', () => {
   try {
     const res = install({
       agentId: 'claude-code',
-      skillIds: ['ingestor'],
+      skillIds: ['compiler'],
       local: true,
       cwd: tmp,
       force: true,
       quiet: true,
     });
     assert.equal(res.results[0].status, 'installed');
-    const installed = path.join(tmp, '.claude/skills/ingestor/SKILL.md');
+    const installed = path.join(tmp, '.claude/skills/compiler/SKILL.md');
     assert.ok(fs.existsSync(installed), 'SKILL.md should be copied');
 
     const rows = listInstalled({ cwd: tmp });
     const row = rows.find((r) => r.agent === 'claude-code' && r.scope === 'local');
-    assert.ok(row && row.skills.includes('ingestor'));
+    assert.ok(row && row.skills.includes('compiler'));
 
     const rm = uninstall({
       agentId: 'claude-code',
-      skillIds: ['ingestor'],
+      skillIds: ['compiler'],
       local: true,
       cwd: tmp,
       quiet: true,

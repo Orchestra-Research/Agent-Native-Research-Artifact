@@ -1,7 +1,7 @@
 {
   "name": "@orchestra-research/ara-skills",
   "version": "0.1.0",
-  "description": "Install Agent-Native Research Artifact (ARA) skills — ingestor, research-manager, rigor-reviewer — into Claude Code, Cursor, OpenCode, Gemini CLI, Codex, and more.",
+  "description": "Install Agent-Native Research Artifact (ARA) skills — compiler, research-manager, rigor-reviewer — into Claude Code, Cursor, OpenCode, Gemini CLI, Codex, and more.",
   "type": "module",
   "bin": {
     "ara-skills": "./bin/cli.js"
@@ -30,7 +30,7 @@
     "gemini",
     "opencode",
     "codex",
-    "ingestor",
+    "compiler",
     "research-manager",
     "rigor-reviewer",
     "llm",

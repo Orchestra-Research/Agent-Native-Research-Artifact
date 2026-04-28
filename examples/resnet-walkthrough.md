@@ -7,19 +7,19 @@ This is the simplest way to understand how to use ARA on a real paper.
 - `resnet-paper.pdf`: source paper
 - `resnet-ara-example/`: example output artifact
 
-## What "using the ingestor" means
+## What "using the compiler" means
 
-The ingestor is not a standalone binary in this repository. It is a skill specification for an agent. In practice, you use it by giving an agent a research input and asking it to produce an ARA artifact.
+The compiler is not a standalone binary in this repository. It is a skill specification for an agent. In practice, you use it by giving an agent a research input and asking it to produce an ARA artifact.
 
 For ResNet, the conceptual command is:
 
 ```text
-/ingestor examples/resnet-paper.pdf --output examples/resnet-ara-example/
+/compiler examples/resnet-paper.pdf --output examples/resnet-ara-example/
 ```
 
 ## What the agent is expected to do
 
-When applied to the ResNet paper, the ingestor should:
+When applied to the ResNet paper, the compiler should:
 
 1. Read the paper and extract the core research objects.
 2. Turn the degradation problem into `logic/problem.md`.
@@ -48,7 +48,7 @@ Then open:
 If you want to use this on another paper or codebase, repeat the same pattern:
 
 1. Put the input PDF or repo in a reachable path.
-2. Ask the agent to run the ingestor on that input.
+2. Ask the agent to run the compiler on that input.
 3. Choose an output folder such as `./ara-output/`.
 4. Review `PAPER.md` first, then verify claims, evidence, and trace links.
 
