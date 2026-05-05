@@ -157,32 +157,7 @@ npx @orchestra-research/ara-skills uninstall --skill rigor-reviewer
 ```
 
 Full CLI reference: [`packages/ara-skills/`](packages/ara-skills/).
-
-### Manual install (Claude Code)
-
-```bash
-# All skills — project-level
-cp -r skills/* .claude/skills/
-
-# All skills — user-level (available in all projects)
-cp -r skills/* ~/.claude/skills/
-
-# Single skill
-cp -r skills/compiler ~/.claude/skills/compiler
-```
-
----
-
-## Examples
-
-| Artifact | Source | Description |
-|----------|--------|-------------|
-| [ResNet ARA](examples/resnet-ara-example/) | Paper + code | Deep residual networks — canonical CV paper |
-| [Scientific Reasoning ARA](ara-output/sci-reasoning/) | Paper | LLM research ideation patterns |
-| [ANDES QoE ARA](ara-output/andes-qoe/) | Paper | LLM inference quality-of-experience |
-
-See [examples/resnet-walkthrough.md](examples/resnet-walkthrough.md) for a step-by-step guide.
-
+  
 ---
 
 ## Compatibility
@@ -203,8 +178,8 @@ If you use ARA in your research, please cite:
 
 ```bibtex
 @article{ara2026,
-  title        = {Agent-Native Research Artifact},
-  author       = {Orchestra Research},
+  title        = {The Last Human-Written Paper: Agent-Native Research Artifacts},
+  author       = {Liu, Jiachen and Pei, Jiaxin and Huang, Jintao and Si, Chenglei and Qu, Ao and Tang, Xiangru and Lu, Runyu and Chen, Lichang and Bai, Xiaoyan and Zheng, Haizhong and Chen, Carl and Chen, Zhiyang and Ye, Haojie and Fu, Yujuan and He, Zexue and Jin, Zijian and Zhang, Zhenyu and Sun, Shangquan and Harmon, Maestro and Wang, John Dianzhuo and Zeng, Jianqiao and Sun, Jiachen and Wu, Mingyuan and Zhou, Baoyu and You, Chenyu and Lu, Shijian and Qiu, Yiming and Lai, Fan and Yuan, Yuan and Li, Yao and Hong, Junyuan and Zhu, Ruihao and Chen, Beidi and Pentland, Alex and Chen, Ang and Chowdhury, Mosharaf and Zhang, Zechen},
   year         = {2026},
   eprint       = {2604.24658},
   archivePrefix= {arXiv},
