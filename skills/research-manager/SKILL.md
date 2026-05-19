@@ -27,6 +27,25 @@ premature structure distorts the record. Most observations are staged and only m
 formal entries when externally observable closure signals indicate the researcher has
 treated them as settled.
 
+## Layer Mutability
+
+The artifact has two mutability regimes. Honor them strictly.
+
+- **`ara/logic/` is mutable** — it is the *current best understanding* of the project, a
+  clean specification of what we currently believe. Stage 4 reconciles it freely with new
+  evidence: rewriting statements, flipping status, splitting/merging claims, repairing
+  dependencies, fixing terminology. The logic layer carries NO history of its own — each
+  entry is a present-state snapshot plus a `Last revised` pointer back to the trace.
+- **`ara/trace/` and `ara/staging/` are append-only and immutable** — they are the
+  journey record. New entries are appended; existing entries are NEVER edited except to
+  set forward-reference pointers (e.g. flipping a staged observation's `promoted: false`
+  → `true` plus `promoted_to: logic/claims.md:C07`, or appending to a session record's
+  events for the current turn). Prior entries' content is never rewritten. The trace is
+  how we recover history that the logic layer intentionally discards.
+
+This split lets `claims.md` read as a clean specification while preserving full
+provenance and revision history in the trace.
+
 ## When This Skill Runs
 
 - **NEVER mid-turn.** Do not read or write `ara/` while still working on the user's request.
@@ -42,11 +61,12 @@ treated them as settled.
 ## The Four-Stage Pipeline
 
 ```
-┌──────────────────┐  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│Context Harvester │->│ Event Router │->│ Maturity Tracker │->│  Status Updater  │
-│ (extract what    │  │ (classify +  │  │ (crystallize on  │  │ (re-evaluate     │
-│  happened)       │  │  route)      │  │  closure signal) │  │  crystallized)   │
-└──────────────────┘  └──────────────┘  └──────────────────┘  └──────────────────┘
+┌──────────────────┐  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────────┐
+│Context Harvester │->│ Event Router │->│ Maturity Tracker │->│  Logic Layer         │
+│ (extract what    │  │ (classify +  │  │ (crystallize on  │  │  Reconciliation      │
+│  happened)       │  │  route)      │  │  closure signal) │  │  (reconcile current  │
+│                  │  │              │  │                  │  │   state w/ this turn)│
+└──────────────────┘  └──────────────┘  └──────────────────┘  └──────────────────────┘
 ```
 
 ### Stage 1 — Context Harvester
@@ -133,16 +153,33 @@ A staged observation that has neither been promoted nor referenced for **3+ sess
 gets `stale: true`. Stale observations are surfaced at the next briefing for the
 researcher to triage — the manager does not auto-discard.
 
-### Stage 4 — Status Updater
+### Stage 4 — Logic Layer Reconciliation
 
-Walk crystallized entries in `logic/claims.md` and check whether this turn's events
-warrant a status change. **Default to no change.** Premature status flips distort the
-record just as premature crystallization does.
+The logic layer (`ara/logic/`) is the **current best understanding** of the project — a
+clean specification of what we currently believe, not an archaeological record. Stage 4
+reconciles it with this turn's events so it stays internally consistent and faithful to
+present evidence.
 
-This stage operates ONLY on already-crystallized claims. Staged observations belong to
-Stage 3; until they crystallize they have no `Status` field to update.
+The trace layer (`ara/trace/`, `ara/staging/`) is append-only and immutable. All history
+of how the logic layer evolved — prior statements, status transitions, revision reasons —
+lives there. The logic file itself carries only the current snapshot plus a `Last revised`
+pointer back to the trace.
 
-#### Allowed transitions
+This stage operates only on **already-crystallized** entries in `logic/`. Staged
+observations belong to Stage 3.
+
+#### What Stage 4 may do
+
+1. **Status updates** — flip a claim's `Status` field when evidence warrants.
+2. **Content revisions** — rewrite a `Statement`, `Rationale`, or definition when new
+   evidence narrows scope, terminology changed, or wording no longer matches what's
+   actually supported.
+3. **Structural changes** — split a claim into two, merge duplicates, repair
+   dependencies, rename ids when concepts are renamed.
+4. **Consistency pass** — scan for broken cross-references (claim cites C05 which no
+   longer exists), terminology mismatch with `concepts.md`, dependency loops.
+
+#### Allowed status transitions
 
 ```
 hypothesis ──► testing ──► supported
@@ -150,7 +187,7 @@ hypothesis ──► testing ──► supported
      │            └──► weakened┘
      ├────────────────► refuted    (terminal, empirical)
      ├────────────────► withdrawn  (terminal, non-empirical)
-     └─ any ─────────► revised    (statement rewritten; reset to testing/hypothesis)
+     └─ any ─────────► revised    (Statement rewritten; reset to testing/hypothesis)
 ```
 
 - `hypothesis`: just crystallized; no evidence gathered yet (default for new claims)
@@ -160,62 +197,86 @@ hypothesis ──► testing ──► supported
 - `weakened`: evidence is mixed, partial, or weaker than required
 - `refuted`: empirical evidence disproves — **terminal**
 - `withdrawn`: researcher dropped the claim for non-empirical reasons (pivot, scope cut) — **terminal**
-- `revised`: claim's `Statement` was rewritten; status resets to `testing` if prior
-  evidence still applies, else `hypothesis`
+- `revised`: a transition marker, not a resting state — after recording the revision in
+  the trace, the claim's `Status` settles to `testing` if prior evidence still applies,
+  else `hypothesis`
 
 `refuted` and `withdrawn` are terminal unless the user explicitly revives the claim (in
 which case route through `revised`).
 
-#### Status signals
+#### Reconciliation signals
 
-For each crystallized claim `C{XX}`, check this turn for:
+For each crystallized entry in `logic/`, check this turn for:
 
-1. **Empirical resolution** — an experiment in C{XX}'s `Proof` refs or `bound_to` nodes
-   produced a result this turn AND the researcher commented on it.
+1. **Empirical resolution** — an experiment in the entry's `Proof` refs or `bound_to`
+   nodes produced a result this turn AND the researcher commented on it.
    - Result confirms → `supported` (or one step toward it)
-   - Result partial / mixed → `weakened`
-   - Result disproves → `refuted` AND append a `dead_end` node referencing C{XX}
-2. **Verbal status declaration** — first-person, explicit, naming the claim or
-   unambiguously referring to its content: "C07 confirmed" / "drop C07" / "we're
-   pulling the SSM claim — not pursuing it". Hedged language ("maybe", "looks like",
-   "probably") does NOT trigger.
-3. **Statement revision** — user rewrote C{XX}'s `Statement` or asked you to. Set
-   status to `revised`, preserve the old wording as `Previous statement:`, then default
-   to `testing` if prior evidence refs survive the rewrite or `hypothesis` if they don't.
-4. **Artifact commitment** — code/config merged this turn explicitly depends on C{XX}.
-   This alone upgrades `hypothesis` → `testing` (the commitment IS the test), but does
-   NOT reach `supported` without corroborating empirical evidence.
-5. **Contradicting evidence** — new evidence contradicts a claim's current status. **Do
-   not auto-flip.** Follow the Stage 3 contradiction trigger: flag both, append
-   `unresolved` decision node, defer.
+   - Result partial / narrower than claim → `weakened`, and consider rewriting the
+     `Statement` to match the actual scope supported
+   - Result disproves → `refuted` AND append a `dead_end` node referencing the claim
+2. **Verbal declaration** — first-person, explicit, naming the claim or unambiguously
+   referring to its content. Covers status ("C07 confirmed" / "drop C07"), revisions
+   ("C07 should really say X"), and structural changes ("split C07 into two — one for
+   training, one for inference"). Hedged language ("maybe", "looks like") does NOT trigger.
+3. **Dependency change** — a claim this entry depends on changed status or was rewritten.
+   Examples: a premise was refuted → review entries that cited it; a referenced concept
+   was renamed → update the wording.
+4. **Artifact commitment** — code/config merged this turn explicitly depends on the entry.
+   Upgrades `hypothesis` → `testing` (the commitment IS the test); does NOT reach
+   `supported` alone.
+5. **Terminology drift** — a new concept added to `concepts.md` this turn refines or
+   renames a term the entry uses. Update the wording for consistency.
+6. **Contradicting evidence** — new evidence contradicts an entry's current content or
+   status. **Do not auto-overwrite.** Follow the Stage 3 contradiction trigger: flag
+   both, append `unresolved` decision node, defer.
 
 #### Edit procedure
 
-When a signal fires for C{XX}:
+When a signal fires for entry `E` (claim, heuristic, or concept):
 
-1. Edit the `- **Status**:` line in `logic/claims.md` to the new value.
-2. Append to a `- **Status history**:` list:
-   `{prev} → {new} on YYYY-MM-DD via {signal} ({turn-id})`. Create the list if absent.
-3. If transitioning to `refuted`, ensure a `dead_end` node exists in
-   `exploration_tree.yaml` referencing C{XX} (create one if not).
-4. If transitioning to `revised`, insert `- **Previous statement**: {old}` immediately
-   above the updated `Statement` line. Do not delete prior statement history — append a
-   new `Previous statement` line each revision.
-5. Add an entry to today's session record `claims_touched`: `{id, action, turn}` with
-   `action ∈ {advanced, weakened, confirmed, refuted, withdrawn, revised}`.
-6. Add a one-line note to `pm_reasoning_log.yaml` explaining which signal fired AND any
+1. Edit the affected fields in the logic file directly. **Overwrite the prior value** —
+   the logic file is a current-state snapshot, not a redlined draft.
+2. Update `- **Last revised**: YYYY-MM-DD (turn-id)` on the entry.
+3. For status flips, also update `- **Status**:` to the new value.
+4. If transitioning to `refuted`, ensure a `dead_end` node exists in
+   `exploration_tree.yaml` referencing the entry (create one if not).
+5. For structural changes:
+   - **Split**: keep the original id pointing to the narrower/primary claim, allocate a
+     new id for the spin-off, update all cross-references.
+   - **Merge**: keep the lower id, mark the higher id as `withdrawn` with
+     `Merged into: C{XX}`, redirect cross-references.
+6. **Record full before/after in today's session record** under `logic_revisions:`
+   (see schema below). This is the ONLY place the prior wording is preserved — the
+   logic file does not keep it.
+7. Add a one-line note to `pm_reasoning_log.yaml` explaining which signal fired AND any
    signal you considered but rejected (near-misses are the most useful continuity record).
+
+#### Provenance for revisions
+
+- User dictated exact wording → `provenance: user`
+- User said "revise C07 to mean X" without exact wording → `provenance: user-revised`
+- Stage 4 reconciled autonomously (terminology, dependency repair, narrowing) →
+  `provenance: ai-suggested`. The researcher can revert at any future turn by saying so.
 
 #### Conservatism rules
 
-- One-step transitions preferred. Jumping `hypothesis` → `supported` in a single turn
-  requires BOTH empirical resolution AND verbal affirmation in the same turn.
-- Terminal states (`refuted`, `withdrawn`) require explicit signals; never reach them by
+- **Default to no change.** Reconciliation is allowed but not required. Don't churn the
+  logic layer; only act when a signal demands it.
+- **One-step transitions preferred.** Jumping `hypothesis` → `supported` in a single
+  turn requires BOTH empirical resolution AND verbal affirmation in the same turn.
+- **Terminal states require explicit signals.** Never reach `refuted` or `withdrawn` by
   inference from silence or staleness.
-- Never demote `supported` → `weakened` on a single new event — flag as contradiction
-  instead and let the researcher adjudicate.
-- If you considered a signal but rejected it (hedged affirmation, ambiguous reference,
-  result that touches a neighboring claim), log the near-miss in `pm_reasoning_log.yaml`.
+- **Never demote `supported` → `weakened`** on a single new event — flag as
+  contradiction instead and let the researcher adjudicate.
+- **Content rewrites preserve falsifiability.** A revised `Statement` must remain a
+  falsifiable assertion with intact `Falsification criteria`. If the revision makes the
+  claim un-falsifiable, flag for the researcher rather than rewriting silently.
+- **Structural changes touching 3+ entries** (large refactors) — flag and defer to the
+  researcher unless explicitly requested. Small refactors (rename one term across two
+  claims) are fair game.
+- **Log near-misses.** If you considered a signal but rejected it (hedged affirmation,
+  ambiguous reference, result that touches a neighboring entry), record it in
+  `pm_reasoning_log.yaml`.
 
 ## Per-Turn Procedure
 
@@ -230,15 +291,19 @@ When a signal fires for C{XX}:
      for each staged observation: check closure signals → crystallize if fired
      for each entry: check contradictions with this turn's events → flag if found
      for long-staged observations (3+ days idle): mark stale: true
-5. Stage 4 — Status Updater:
-     for each crystallized claim in logic/claims.md: check status signals against this turn
-       → edit Status line + append Status history if a signal fired (conservative default)
+5. Stage 4 — Logic Layer Reconciliation:
+     for each crystallized entry in logic/ (claims, heuristics, concepts):
+       check status signals → edit Status line if fired
+       check content signals → rewrite Statement / Rationale / definition if reconciliation demanded
+       check structural signals → split, merge, repair dependencies, fix terminology drift
+     run cross-reference consistency pass (broken refs, renamed ids, terminology mismatch)
+     record before/after of every change in today's session record (the logic file does not retain history)
      log near-miss signals (considered but rejected) to pm_reasoning_log.yaml
 6. Append turn events to today's session record.
 7. Update or append today's entry in trace/sessions/session_index.yaml.
 8. Append a brief reasoning entry to trace/pm_reasoning_log.yaml (self-continuity).
 9. Print one-line summary, e.g.:
-     [PM] Turn captured: 1 decision (direct), 2 observations staged, 1 claim crystallized via affirmation, C03 testing→supported.
+     [PM] Turn captured: 1 decision (direct), 2 observations staged, 1 claim crystallized via affirmation, C03 testing→supported, C07 revised (scope narrowed).
    Or, for empty turns:
      [PM] Turn skipped: no research events.
 ```
@@ -248,9 +313,9 @@ When a signal fires for C{XX}:
 ```
 ara/
   PAPER.md                          # Root manifest + layer index
-  logic/                            # What & Why (crystallized only)
+  logic/                            # MUTABLE — current best understanding (Stage 4 reconciles)
     problem.md
-    claims.md                       #   Falsifiable assertions + proof refs
+    claims.md                       #   Falsifiable assertions + proof refs (current snapshot only)
     concepts.md
     experiments.md
     solution/
@@ -263,17 +328,17 @@ ara/
     configs/
     kernel/
     environment.md
-  trace/                            # Journey (direct routing)
+  trace/                            # APPEND-ONLY — the journey, never rewritten
     exploration_tree.yaml           #   Research DAG: decisions, experiments, dead_ends, pivots, questions
     pm_reasoning_log.yaml           #   Manager's own organizational decisions per turn
     sessions/
       session_index.yaml            #   Master session index (one entry per calendar day)
-      YYYY-MM-DD_NNN.yaml           #   Per-day session record
-  evidence/                         # Raw Proof
+      YYYY-MM-DD_NNN.yaml           #   Per-day session record, incl. logic_revisions
+  evidence/                         # APPEND-ONLY — raw proof
     README.md
     tables/
     figures/
-  staging/                          # Unclassified / awaiting closure
+  staging/                          # APPEND-ONLY — unclassified / awaiting closure
     observations.yaml               #   The crystallization buffer
 ```
 
@@ -311,37 +376,47 @@ tree:
 
 ```markdown
 ## C{XX}: {title}
-- **Statement**: {falsifiable assertion}
-- **Previous statement**: {only present if Status has ever been "revised"; one line per revision, oldest first}
-- **Status**: hypothesis | untested | testing | supported | weakened | refuted | withdrawn | revised
-- **Status history**:
-    - hypothesis → testing on YYYY-MM-DD via artifact-commitment (turn-id)
-    - testing → supported on YYYY-MM-DD via empirical-resolution (turn-id)
+- **Statement**: {current falsifiable assertion}
+- **Status**: hypothesis | untested | testing | supported | weakened | refuted | withdrawn
 - **Provenance**: user | ai-suggested | user-revised
-- **Crystallized via**: topic-abandonment | verbal-affirmation | empirical-resolution | artifact-commitment
 - **Falsification criteria**: {what would disprove this}
 - **Proof**: [{evidence refs or "pending"}]
 - **Dependencies**: [C{YY}, ...]
 - **Tags**: {comma-separated}
-- **From staging**: O{XX}
+- **Last revised**: YYYY-MM-DD (turn-id)   # pointer back to the trace; absent until first revision
 ```
 
-`Status history` is omitted on the initial crystallized entry (status starts at
-`hypothesis`) and appended to by Stage 4 each time the status changes. `refuted` and
-`withdrawn` are terminal — once set, no further transitions should appear except via an
-explicit `revised` revival.
+The claim file is a **current-state snapshot**. It carries no history — no prior
+statements, no status transition log, no `From staging` pointer, no `Crystallized via`
+note. All of that lives in the trace:
+
+- Original crystallization: `trace/sessions/YYYY-MM-DD_NNN.yaml` (turn where the claim
+  was promoted) and `staging/observations.yaml` (the source observation, still flagged
+  `promoted: true`).
+- Every subsequent edit: `trace/sessions/YYYY-MM-DD_NNN.yaml` under `logic_revisions:`
+  with full before/after, signal, and provenance.
+- Reasoning for each edit: `trace/pm_reasoning_log.yaml`.
+
+`refuted` and `withdrawn` are terminal — once set, the claim is not edited further except
+via an explicit revival by the user (which reopens it through a `revised` transition and
+settles to `testing` or `hypothesis`). `revised` itself is a transition marker, not a
+resting state: after the revision is recorded in the trace, `Status` settles back to a
+working value.
 
 ### Heuristic (`logic/solution/heuristics.md`) — crystallized only
 
 ```markdown
 ## H{XX}: {title}
-- **Rationale**: {why this works}
+- **Rationale**: {current best explanation of why this works}
+- **Status**: active | weakened | retired
 - **Provenance**: user | ai-suggested | user-revised
-- **Crystallized via**: {closure signal}
 - **Sensitivity**: low | medium | high
 - **Code ref**: [{file paths}]
-- **From staging**: O{XX}
+- **Last revised**: YYYY-MM-DD (turn-id)   # absent until first revision
 ```
+
+Same principle as claims: current-state snapshot only, no `From staging` or
+`Crystallized via` clutter. Crystallization and revision history live in the trace.
 
 ### Observation (`staging/observations.yaml`) — staged
 
@@ -387,8 +462,26 @@ ai_actions:
 
 claims_touched:
   - id: C{XX}
-    action: created | advanced | weakened | confirmed | crystallized
+    action: created | crystallized | advanced | weakened | confirmed | refuted | withdrawn | revised | split | merged
     turn: 1
+
+logic_revisions:                  # full before/after for every edit Stage 4 makes
+  - turn: 1
+    entry: C{XX}                  # or H{XX}, concept id, etc.
+    field: Statement | Status | Rationale | Dependencies | id | ...
+    before: "{prior value, verbatim}"
+    after: "{new value, verbatim}"
+    signal: empirical-resolution | verbal-declaration | dependency-change | artifact-commitment | terminology-drift | user-directive
+    provenance: user | ai-suggested | user-revised
+    note: "{one-line why, optional}"
+  # structural changes record both endpoints, e.g. for a split:
+  - turn: 1
+    entry: C07
+    field: split
+    before: "C07 covered both training and inference"
+    after: "C07 = training-time claim; C12 = inference-time claim"
+    signal: verbal-declaration
+    provenance: user-revised
 
 key_context:
   - turn: 1
@@ -471,16 +564,25 @@ deliver the full briefing.
 4. **Never crystallize without a closure signal.** No counter, no LM-judged maturity — only
    abandonment / affirmation / resolution / commitment.
 5. **Never auto-upgrade provenance.** `ai-suggested` stays until explicit user affirmation.
-6. **Never auto-flip claim status.** Stage 4 requires an explicit status signal from this
-   turn. Default to no change. Log near-misses. Terminal states (`refuted`, `withdrawn`)
+6. **Stage 4 reconciles the logic layer; default to no change.** Status flips, content
+   rewrites, splits/merges, and consistency repairs are allowed but require an explicit
+   signal from this turn. Log near-misses. Terminal states (`refuted`, `withdrawn`)
    need explicit triggers — never reach them by silence or staleness.
-7. **Never silently overwrite contradictions.** Flag both, append unresolved decision node,
-   defer.
-8. **Always read existing files first.** Get correct next IDs, avoid duplicates.
-9. **Establish forensic bindings.** claim→proof, heuristic→code, decision→evidence. Use
-   `[pending]` + TODO if not yet bindable.
-10. **Append, never overwrite.** New entries only; status updates use Edit on the specific
-    field, not file rewrites.
-11. **Skip empty turns.** No record for greetings, ack, pure formatting.
-12. **Keep YAML valid.** Validate structure mentally before writes.
-13. **Be terse in the summary line.** One line per turn, factual, no narration.
+7. **Logic layer is a current-state snapshot.** Each edit overwrites the prior value in
+   `logic/`. The before/after lives in the trace, not in the logic file. Never carry a
+   `Previous statement` line or status history in claim entries.
+8. **Trace and staging are append-only.** Never edit prior entries in `trace/sessions/`,
+   `trace/pm_reasoning_log.yaml`, `trace/exploration_tree.yaml`, or
+   `staging/observations.yaml` except to set forward-reference pointers (e.g.
+   `promoted: true`, `promoted_to:`, appending to today's events). Existing content is
+   never rewritten.
+9. **Never silently overwrite contradictions.** Flag both, append unresolved decision
+   node, defer.
+10. **Always read existing files first.** Get correct next IDs, avoid duplicates.
+11. **Establish forensic bindings.** claim→proof, heuristic→code, decision→evidence. Use
+    `[pending]` + TODO if not yet bindable.
+12. **Every logic-layer edit gets a `logic_revisions:` entry in the session record** with
+    full before/after. This is the only place pre-edit content is preserved.
+13. **Skip empty turns.** No record for greetings, ack, pure formatting.
+14. **Keep YAML valid.** Validate structure mentally before writes.
+15. **Be terse in the summary line.** One line per turn, factual, no narration.
