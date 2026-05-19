@@ -36,7 +36,7 @@ jobs:
         id: check
         run: |
           LOCAL=$(node -p "require('./package.json').version")
-          PUBLISHED=$(npm view @orchestra-research/ara-skills version 2>/dev/null || echo "0.0.0")
+          PUBLISHED=$(npm view @ara-commons/ara-skills version 2>/dev/null || echo "0.0.0")
           echo "local=$LOCAL"  >> "$GITHUB_OUTPUT"
           echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
           if [ "$LOCAL" = "$PUBLISHED" ]; then

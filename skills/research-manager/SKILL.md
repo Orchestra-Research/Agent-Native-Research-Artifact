@@ -14,7 +14,7 @@ user-invocable: true
 argument-hint: "[optional: hint about what happened this turn]"
 allowed-tools: Read, Write, Edit, Glob, Grep
 metadata:
-  author: Orchestra-Research
+  author: ara-commons
   version: "2.1.0"
   tags: [research, process-recording, provenance, progressive-crystallization, knowledge-management]
 ---
@@ -39,14 +39,14 @@ treated them as settled.
 - **Skip empty turns.** Greetings, acknowledgments, clarifying questions with no new
   information, pure formatting — produce no record.
 
-## The Three-Stage Pipeline
+## The Four-Stage Pipeline
 
 ```
-┌──────────────────────┐    ┌────────────────┐    ┌─────────────────────┐
-│  Context Harvester   │ -> │  Event Router  │ -> │  Maturity Tracker   │
-│  (extract what       │    │  (classify +   │    │  (crystallize when  │
-│   happened)          │    │   route)       │    │   closure signals)  │
-└──────────────────────┘    └────────────────┘    └─────────────────────┘
+┌──────────────────┐  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│Context Harvester │->│ Event Router │->│ Maturity Tracker │->│  Status Updater  │
+│ (extract what    │  │ (classify +  │  │ (crystallize on  │  │ (re-evaluate     │
+│  happened)       │  │  route)      │  │  closure signal) │  │  crystallized)   │
+└──────────────────┘  └──────────────┘  └──────────────────┘  └──────────────────┘
 ```
 
 ### Stage 1 — Context Harvester
@@ -133,6 +133,90 @@ A staged observation that has neither been promoted nor referenced for **3+ sess
 gets `stale: true`. Stale observations are surfaced at the next briefing for the
 researcher to triage — the manager does not auto-discard.
 
+### Stage 4 — Status Updater
+
+Walk crystallized entries in `logic/claims.md` and check whether this turn's events
+warrant a status change. **Default to no change.** Premature status flips distort the
+record just as premature crystallization does.
+
+This stage operates ONLY on already-crystallized claims. Staged observations belong to
+Stage 3; until they crystallize they have no `Status` field to update.
+
+#### Allowed transitions
+
+```
+hypothesis ──► testing ──► supported
+     │            │            ▲
+     │            └──► weakened┘
+     ├────────────────► refuted    (terminal, empirical)
+     ├────────────────► withdrawn  (terminal, non-empirical)
+     └─ any ─────────► revised    (statement rewritten; reset to testing/hypothesis)
+```
+
+- `hypothesis`: just crystallized; no evidence gathered yet (default for new claims)
+- `untested`: deliberately deferred — work not started, not currently planned
+- `testing`: an experiment that bears on the claim is in progress
+- `supported`: empirical evidence confirms the claim
+- `weakened`: evidence is mixed, partial, or weaker than required
+- `refuted`: empirical evidence disproves — **terminal**
+- `withdrawn`: researcher dropped the claim for non-empirical reasons (pivot, scope cut) — **terminal**
+- `revised`: claim's `Statement` was rewritten; status resets to `testing` if prior
+  evidence still applies, else `hypothesis`
+
+`refuted` and `withdrawn` are terminal unless the user explicitly revives the claim (in
+which case route through `revised`).
+
+#### Status signals
+
+For each crystallized claim `C{XX}`, check this turn for:
+
+1. **Empirical resolution** — an experiment in C{XX}'s `Proof` refs or `bound_to` nodes
+   produced a result this turn AND the researcher commented on it.
+   - Result confirms → `supported` (or one step toward it)
+   - Result partial / mixed → `weakened`
+   - Result disproves → `refuted` AND append a `dead_end` node referencing C{XX}
+2. **Verbal status declaration** — first-person, explicit, naming the claim or
+   unambiguously referring to its content: "C07 confirmed" / "drop C07" / "we're
+   pulling the SSM claim — not pursuing it". Hedged language ("maybe", "looks like",
+   "probably") does NOT trigger.
+3. **Statement revision** — user rewrote C{XX}'s `Statement` or asked you to. Set
+   status to `revised`, preserve the old wording as `Previous statement:`, then default
+   to `testing` if prior evidence refs survive the rewrite or `hypothesis` if they don't.
+4. **Artifact commitment** — code/config merged this turn explicitly depends on C{XX}.
+   This alone upgrades `hypothesis` → `testing` (the commitment IS the test), but does
+   NOT reach `supported` without corroborating empirical evidence.
+5. **Contradicting evidence** — new evidence contradicts a claim's current status. **Do
+   not auto-flip.** Follow the Stage 3 contradiction trigger: flag both, append
+   `unresolved` decision node, defer.
+
+#### Edit procedure
+
+When a signal fires for C{XX}:
+
+1. Edit the `- **Status**:` line in `logic/claims.md` to the new value.
+2. Append to a `- **Status history**:` list:
+   `{prev} → {new} on YYYY-MM-DD via {signal} ({turn-id})`. Create the list if absent.
+3. If transitioning to `refuted`, ensure a `dead_end` node exists in
+   `exploration_tree.yaml` referencing C{XX} (create one if not).
+4. If transitioning to `revised`, insert `- **Previous statement**: {old}` immediately
+   above the updated `Statement` line. Do not delete prior statement history — append a
+   new `Previous statement` line each revision.
+5. Add an entry to today's session record `claims_touched`: `{id, action, turn}` with
+   `action ∈ {advanced, weakened, confirmed, refuted, withdrawn, revised}`.
+6. Add a one-line note to `pm_reasoning_log.yaml` explaining which signal fired AND any
+   signal you considered but rejected (near-misses are the most useful continuity record).
+
+#### Conservatism rules
+
+- One-step transitions preferred. Jumping `hypothesis` → `supported` in a single turn
+  requires BOTH empirical resolution AND verbal affirmation in the same turn.
+- Terminal states (`refuted`, `withdrawn`) require explicit signals; never reach them by
+  inference from silence or staleness.
+- Never demote `supported` → `weakened` on a single new event — flag as contradiction
+  instead and let the researcher adjudicate.
+- If you considered a signal but rejected it (hedged affirmation, ambiguous reference,
+  result that touches a neighboring claim), log the near-miss in `pm_reasoning_log.yaml`.
+
 ## Per-Turn Procedure
 
 ```
@@ -146,11 +230,15 @@ researcher to triage — the manager does not auto-discard.
      for each staged observation: check closure signals → crystallize if fired
      for each entry: check contradictions with this turn's events → flag if found
      for long-staged observations (3+ days idle): mark stale: true
-5. Append turn events to today's session record.
-6. Update or append today's entry in trace/sessions/session_index.yaml.
-7. Append a brief reasoning entry to trace/pm_reasoning_log.yaml (self-continuity).
-8. Print one-line summary, e.g.:
-     [PM] Turn captured: 1 decision (direct), 2 observations staged, 1 claim crystallized via affirmation.
+5. Stage 4 — Status Updater:
+     for each crystallized claim in logic/claims.md: check status signals against this turn
+       → edit Status line + append Status history if a signal fired (conservative default)
+     log near-miss signals (considered but rejected) to pm_reasoning_log.yaml
+6. Append turn events to today's session record.
+7. Update or append today's entry in trace/sessions/session_index.yaml.
+8. Append a brief reasoning entry to trace/pm_reasoning_log.yaml (self-continuity).
+9. Print one-line summary, e.g.:
+     [PM] Turn captured: 1 decision (direct), 2 observations staged, 1 claim crystallized via affirmation, C03 testing→supported.
    Or, for empty turns:
      [PM] Turn skipped: no research events.
 ```
@@ -224,7 +312,11 @@ tree:
 ```markdown
 ## C{XX}: {title}
 - **Statement**: {falsifiable assertion}
-- **Status**: hypothesis | untested | testing | supported | weakened | refuted | revised
+- **Previous statement**: {only present if Status has ever been "revised"; one line per revision, oldest first}
+- **Status**: hypothesis | untested | testing | supported | weakened | refuted | withdrawn | revised
+- **Status history**:
+    - hypothesis → testing on YYYY-MM-DD via artifact-commitment (turn-id)
+    - testing → supported on YYYY-MM-DD via empirical-resolution (turn-id)
 - **Provenance**: user | ai-suggested | user-revised
 - **Crystallized via**: topic-abandonment | verbal-affirmation | empirical-resolution | artifact-commitment
 - **Falsification criteria**: {what would disprove this}
@@ -233,6 +325,11 @@ tree:
 - **Tags**: {comma-separated}
 - **From staging**: O{XX}
 ```
+
+`Status history` is omitted on the initial crystallized entry (status starts at
+`hypothesis`) and appended to by Stage 4 each time the status changes. `refuted` and
+`withdrawn` are terminal — once set, no further transitions should appear except via an
+explicit `revised` revival.
 
 ### Heuristic (`logic/solution/heuristics.md`) — crystallized only
 
@@ -374,13 +471,16 @@ deliver the full briefing.
 4. **Never crystallize without a closure signal.** No counter, no LM-judged maturity — only
    abandonment / affirmation / resolution / commitment.
 5. **Never auto-upgrade provenance.** `ai-suggested` stays until explicit user affirmation.
-6. **Never silently overwrite contradictions.** Flag both, append unresolved decision node,
+6. **Never auto-flip claim status.** Stage 4 requires an explicit status signal from this
+   turn. Default to no change. Log near-misses. Terminal states (`refuted`, `withdrawn`)
+   need explicit triggers — never reach them by silence or staleness.
+7. **Never silently overwrite contradictions.** Flag both, append unresolved decision node,
    defer.
-7. **Always read existing files first.** Get correct next IDs, avoid duplicates.
-8. **Establish forensic bindings.** claim→proof, heuristic→code, decision→evidence. Use
+8. **Always read existing files first.** Get correct next IDs, avoid duplicates.
+9. **Establish forensic bindings.** claim→proof, heuristic→code, decision→evidence. Use
    `[pending]` + TODO if not yet bindable.
-9. **Append, never overwrite.** New entries only; status updates use Edit on the specific
-   field, not file rewrites.
-10. **Skip empty turns.** No record for greetings, ack, pure formatting.
-11. **Keep YAML valid.** Validate structure mentally before writes.
-12. **Be terse in the summary line.** One line per turn, factual, no narration.
+10. **Append, never overwrite.** New entries only; status updates use Edit on the specific
+    field, not file rewrites.
+11. **Skip empty turns.** No record for greetings, ack, pure formatting.
+12. **Keep YAML valid.** Validate structure mentally before writes.
+13. **Be terse in the summary line.** One line per turn, factual, no narration.

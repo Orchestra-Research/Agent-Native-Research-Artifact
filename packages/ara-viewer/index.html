@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ARA Viewer</title>
+  <link rel="stylesheet" href="style.css?v=2" />
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <span class="name">ARA</span>
+    </div>
+    <div id="paper-meta" class="paper-meta"></div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="filter claims…" autocomplete="off" />
+      <button id="expand-all" title="expand every claim's sub-sections">expand all</button>
+      <button id="collapse-all" title="collapse everything">collapse all</button>
+    </div>
+  </header>
+
+  <div id="layout">
+    <nav id="toc" aria-label="contents"></nav>
+    <main id="doc">
+      <div id="hero" class="hero"></div>
+      <div id="sections"></div>
+      <div id="loading" class="loading">loading…</div>
+    </main>
+  </div>
+
+  <script src="viewer.js?v=2"></script>
+</body>
+</html>

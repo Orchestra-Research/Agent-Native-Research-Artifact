@@ -133,7 +133,7 @@ See [skills/rigor-reviewer/SKILL.md](skills/rigor-reviewer/SKILL.md) for the ful
 ## Install
 
 ```bash
-npx @orchestra-research/ara-skills
+npx @ara-commons/ara-skills
 ```
 
 Auto-detects Claude Code, Cursor, Gemini CLI, OpenCode, Codex, and Hermes, then prompts for skills, agents, and install scope (global vs. local).
@@ -142,18 +142,18 @@ Auto-detects Claude Code, Cursor, Gemini CLI, OpenCode, Codex, and Hermes, then 
 
 ```bash
 # All three skills, every detected agent, user-level
-npx @orchestra-research/ara-skills install --all
+npx @ara-commons/ara-skills install --all
 
 # One skill, one agent
-npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
+npx @ara-commons/ara-skills install --skill compiler --agent claude-code
 
 # Into the current project (.claude/skills, .cursor/skills, …) instead of $HOME
-npx @orchestra-research/ara-skills install --all --local
+npx @ara-commons/ara-skills install --all --local
 
 # List / update / remove
-npx @orchestra-research/ara-skills list
-npx @orchestra-research/ara-skills update
-npx @orchestra-research/ara-skills uninstall --skill rigor-reviewer
+npx @ara-commons/ara-skills list
+npx @ara-commons/ara-skills update
+npx @ara-commons/ara-skills uninstall --skill rigor-reviewer
 ```
 
 Full CLI reference: [`packages/ara-skills/`](packages/ara-skills/).

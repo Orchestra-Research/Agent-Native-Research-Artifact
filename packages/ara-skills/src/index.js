@@ -7,13 +7,13 @@ const HELP = `
 ${chalk.bold.cyan('ara-skills')} — install ARA research skills to your coding agent
 
 ${chalk.bold('Usage:')}
-  npx @orchestra-research/ara-skills                 # interactive
-  npx @orchestra-research/ara-skills install [opts]
-  npx @orchestra-research/ara-skills list
-  npx @orchestra-research/ara-skills update  [opts]
-  npx @orchestra-research/ara-skills uninstall [opts]
-  npx @orchestra-research/ara-skills skills          # show available skills
-  npx @orchestra-research/ara-skills agents          # show supported agents
+  npx @ara-commons/ara-skills                 # interactive
+  npx @ara-commons/ara-skills install [opts]
+  npx @ara-commons/ara-skills list
+  npx @ara-commons/ara-skills update  [opts]
+  npx @ara-commons/ara-skills uninstall [opts]
+  npx @ara-commons/ara-skills skills          # show available skills
+  npx @ara-commons/ara-skills agents          # show supported agents
 
 ${chalk.bold('Install options:')}
   --all                         Install every skill (default if no --skill given)
@@ -24,10 +24,10 @@ ${chalk.bold('Install options:')}
   --quiet                       Suppress per-skill log output
 
 ${chalk.bold('Examples:')}
-  npx @orchestra-research/ara-skills install --all
-  npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
-  npx @orchestra-research/ara-skills install --all --local
-  npx @orchestra-research/ara-skills uninstall --skill rigor-reviewer --agent cursor
+  npx @ara-commons/ara-skills install --all
+  npx @ara-commons/ara-skills install --skill compiler --agent claude-code
+  npx @ara-commons/ara-skills install --all --local
+  npx @ara-commons/ara-skills uninstall --skill rigor-reviewer --agent cursor
 `;
 
 function parseArgs(argv) {

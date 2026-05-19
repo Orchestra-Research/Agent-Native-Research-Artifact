@@ -1,4 +1,4 @@
-# @orchestra-research/ara-skills
+# @ara-commons/ara-skills
 
 One-command installer for the three **Agent-Native Research Artifact (ARA)** skills:
 
@@ -12,16 +12,16 @@ One-command installer for the three **Agent-Native Research Artifact (ARA)** ski
 
 ```bash
 # interactive (auto-detects Claude Code, Cursor, Gemini CLI, OpenCode, Codex, Hermes)
-npx @orchestra-research/ara-skills
+npx @ara-commons/ara-skills
 
 # install everything to every detected agent (global / user-level)
-npx @orchestra-research/ara-skills install --all
+npx @ara-commons/ara-skills install --all
 
 # install just the compiler to Claude Code
-npx @orchestra-research/ara-skills install --skill compiler --agent claude-code
+npx @ara-commons/ara-skills install --skill compiler --agent claude-code
 
 # install into the current project instead of $HOME
-npx @orchestra-research/ara-skills install --all --local
+npx @ara-commons/ara-skills install --all --local
 ```
 
 ## Commands

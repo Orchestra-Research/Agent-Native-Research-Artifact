@@ -94,7 +94,7 @@ export function install(opts) {
     copyDir(skill.path, dest);
     lock.skills[skill.id] = {
       installedAt: new Date().toISOString(),
-      source: '@orchestra-research/ara-skills',
+      source: '@ara-commons/ara-skills',
     };
     results.push({ skill: skill.id, status: 'installed', dest });
     if (!quiet) console.log(`  + ${skill.id}  ->  ${dest}`);
